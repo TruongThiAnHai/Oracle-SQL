@@ -1,0 +1,178 @@
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> CREATE USER student  IDENTIFIED BY 2211;
+
+User created.
+
+SQL> GRANT CREATE SESSION, CREATE TABLE to student;
+
+Grant succeeded.
+
+SQL> connect student
+Connected.
+SQL> create table Movies(
+  2  Movie_id NUMBER (5,0) NOT NULL,
+  3  Movie_name NVARCHAR2 (40) NOT NULL,
+  4  Movie_year NUMBER (4,0),
+  5  Movie_premise NVARCHAR2 (50),
+  6  PRIMARY KEY (Movie_id));
+
+Table created.
+
+SQL> create table Actors(
+  2  Actor_id NUMBER (5,0) NOT NULL,
+  3  Actor_name NVARCHAR2 (40) NOT NULL,
+  4  Actor_dateofbirth DATE,
+  5  PRIMARY KEY (Actor_id));
+
+Table created.
+
+SQL> create table Movies_actors(
+  2  Movie_id NUMBER (5,0) NOT NULL,
+  3  Actor_id NUMBER (5,0) NOT NULL,
+  4  foreign key (Movie_id) references Movies(Movie_id),
+  5  foreign key (Actor_id) references Actors(Actor_id));
+
+Table created.
+
+SQL> create table Episodes(
+  2  Episode_id NUMBER (5,0) NOT NULL,
+  3  Movie_id NUMBER (5,0) NOT NULL,
+  4  Episode_name NVARCHAR2 (40) NOT NULL,
+  5  PRIMARY KEY (Episode_id),
+  6  foreign key (Movie_id) references Movies(Movie_id));
+
+Table created.
+
+SQL> create table Reviews(
+  2  Review_id NUMBER (5,0) NOT NULL,
+  3  Movie_id NUMBER (5,0) NOT NULL,
+  4  Episode_id NUMBER (5,0),
+  5  Review NVARCHAR2(50));
+
+Table created.
+
+SQL> insert all
+  2  into Movies(Movie_id,Movie_name) values (1,'The good doctor')
+  3  into Movies(Movie_id,Movie_name) values (2,'Charlie and the Chocolate Factory')
+  4  SELECT * FROM dual;
+into Movies(Movie_id,Movie_name) values (1,'The good doctor')
+     *
+ERROR at line 2:
+ORA-01950: no privileges on tablespace 'USERS' 
+
+
+SQL> connect system
+Connected.
+
+SQL> GRANT UNLIMITED TABLESPACE TO student;
+
+Grant succeeded.
+
+SQL> connect student
+Connected.
+SQL> insert all
+  2   into Movies(Movie_id,Movie_name) values (1,'The good doctor')
+  3  into Movies(Movie_id,Movie_name) values (2,'Charlie and the Chocolate Factory')
+  4   SELECT * FROM dual;
+
+2 rows created.
+
+SQL> insert all
+  2  into Actors(Actor_id,Actor_name) values (1,'Freddie Highmore')
+  3  into Actors(Actor_id,Actor_name) values (2,'Johnny Depp')
+  4  into Actors(Actor_id,Actor_name) values (3,'Fiona Gbelman')
+  5  SELECT * FROM dual;
+
+3 rows created.
+
+SQL> insert all
+  2  into Movies_actors values (1,1)
+  3  into Movies_actors values (1,3)
+  4  into Movies_actors values (2,1)
+  5  into Movies_actors values (2,3)
+  6  SELECT * FROM dual;
+
+4 rows created.
+
+SQL> insert all
+  2  into Episodes values (1,1,'Burnt Food')
+  3  into Episodes values (2,1,'Mount Rushmore')
+  4  SELECT * FROM dual;
+
+2 rows created.
+
+SQL> insert all
+  2  into Reviews(Review_id,Movie_id,Review) values (1,2,'This is the good film')
+  3  into Reviews values (2,1,1,'This is the best episode in this serie')
+  4  SELECT * FROM dual;
+
+2 rows created.
+
+SQL> SELECT * FROM table Movies;
+SELECT * FROM table Movies
+                    *
+ERROR at line 1:
+ORA-00906: missing left parenthesis 
+
+
+SQL> SELECT * FROM  Movies;
+
+  MOVIE_ID MOVIE_NAME                               MOVIE_YEAR                  
+---------- ---------------------------------------- ----------                  
+MOVIE_PREMISE                                                                   
+--------------------------------------------------                              
+         1 The good doctor                                                      
+                                                                                
+                                                                                
+         2 Charlie and the Chocolate Factory                                    
+                                                                                
+                                                                                
+
+SQL> SELECT * FROM  ;
+SELECT * FROM  
+              *
+ERROR at line 1:
+ORA-00903: invalid table name 
+
+
+SQL> SELECT * FROM Actors ;
+
+  ACTOR_ID ACTOR_NAME                               ACTOR_DAT                   
+---------- ---------------------------------------- ---------                   
+         1 Freddie Highmore                                                     
+         2 Johnny Depp                                                          
+         3 Fiona Gbelman                                                        
+
+SQL> SELECT * FROM Movies_actors ;
+
+  MOVIE_ID   ACTOR_ID                                                           
+---------- ----------                                                           
+         1          1                                                           
+         1          3                                                           
+         2          1                                                           
+         2          3                                                           
+
+SQL> SELECT * FROM Reviews ;
+
+ REVIEW_ID   MOVIE_ID EPISODE_ID                                                
+---------- ---------- ----------                                                
+REVIEW                                                                          
+--------------------------------------------------                              
+         1          2                                                           
+This is the good film                                                           
+                                                                                
+         2          1          1                                                
+This is the best episode in this serie                                          
+                                                                                
+
+SQL> SELECT * FROM Episodes ;
+
+EPISODE_ID   MOVIE_ID EPISODE_NAME                                              
+---------- ---------- ----------------------------------------                  
+         1          1 Burnt Food                                                
+         2          1 Mount Rushmore                                            
+
+SQL> spool off
