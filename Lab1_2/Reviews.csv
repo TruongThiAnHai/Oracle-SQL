@@ -1,0 +1,10 @@
+Review_id,Movie_id,Episode_id,Review
+1,1,3,Good
+2,6,7,Great
+3,2,,Not bad
+4,9,,This is the best movie
+5,9,,Fantasy
+6,4,,Good
+7,6,7,The best episode in this serie
+8,9,,Good
+9,1,5,Not bad
