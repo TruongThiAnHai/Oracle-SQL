@@ -451,4 +451,20 @@ Fantasy
 
 9 rows selected.
 
+SQL> SELECT CAST (TO_CHAR (LAST_DAY (SYSDATE), 'dd') AS INT) number_of_days
+  2    FROM DUAL;
+
+NUMBER_OF_DAYS
+--------------
+            30
+
+SQL> SELECT SYSDATE,
+  2         LAST_DAY (SYSDATE) "Last",
+  3         LAST_DAY (SYSDATE) - SYSDATE "Days left"
+  4    FROM DUAL;
+
+SYSDATE   Last       Days left
+--------- --------- ----------
+15-APR-20 30-APR-20         15
+
 SQL> spool off
