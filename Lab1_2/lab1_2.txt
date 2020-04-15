@@ -167,6 +167,46 @@ End game
 
 11 rows selected.
 
+SQL> SELECT Movies.Movie_name,Episodes.Episode_name, Reviews.Review
+  2  FROM  Reviews, Episodes,Movies
+  3  WHERE Episodes.Episode_id=Reviews.Episode_id and Episodes.Movie_id=Movies.Movie_id;
+
+MOVIE_NAME
+----------------------------------------
+EPISODE_NAME
+----------------------------------------
+REVIEW
+--------------------------------------------------
+The good doctor
+Burnt Food
+Good
+
+The good doctor
+Pipes
+Not bad
+
+MOVIE_NAME
+----------------------------------------
+EPISODE_NAME
+----------------------------------------
+REVIEW
+--------------------------------------------------
+
+A Game of Thrones
+A Golden Crown
+The best episode in this serie
+
+A Game of Thrones
+A Golden Crown
+
+MOVIE_NAME
+----------------------------------------
+EPISODE_NAME
+----------------------------------------
+REVIEW
+--------------------------------------------------
+Great
+
 SQL> SELECT Actor_name FROM Actors ORDER BY Actor_year;
 
 ACTOR_NAME                                                                      
