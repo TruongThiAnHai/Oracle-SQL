@@ -1,0 +1,414 @@
+SQL> connect student
+Connected.
+SQL> select * from movies;
+
+  MOVIE_ID MOVIE_NAME                               MOVIE_YEAR                  
+---------- ---------------------------------------- ----------                  
+MOVIE_PREMISE                                                                   
+--------------------------------------------------                              
+         1 The good doctor                                2015                  
+                                                                                
+                                                                                
+         2 Charlie and the Chocolate Factory              2005                  
+                                                                                
+                                                                                
+         3 Alice in Wonderland                            2010                  
+                                                                                
+                                                                                
+
+  MOVIE_ID MOVIE_NAME                               MOVIE_YEAR                  
+---------- ---------------------------------------- ----------                  
+MOVIE_PREMISE                                                                   
+--------------------------------------------------                              
+         4 The Princess Diaries                           2001                  
+                                                                                
+                                                                                
+         5 One day                                        2011                  
+                                                                                
+                                                                                
+         6 A Game of Thrones                              2010                  
+                                                                                
+                                                                                
+
+  MOVIE_ID MOVIE_NAME                               MOVIE_YEAR                  
+---------- ---------------------------------------- ----------                  
+MOVIE_PREMISE                                                                   
+--------------------------------------------------                              
+         7 Last Christmas                                 2019                  
+                                                                                
+                                                                                
+         8 Me before you                                  2016                  
+                                                                                
+                                                                                
+         9 The Avengers                                   2012                  
+                                                                                
+                                                                                
+
+9 rows selected.
+                                                                              
+SQL> insert all
+  2  into Movies(Movie_id,Movie_name,Movie_year) values (10,'End game',2019)
+  3  into Movies(Movie_id,Movie_name,Movie_year) values (11,'The hunger game',2014)
+  4  SELECT * FROM dual;
+
+2 rows created.
+
+
+SQL> insert all
+  2  into Movies_actors values (10,5)
+  3  into Movies_actors values (10,10)
+  4  into Movies_actors values (10,7)
+  5  into Movies_actors values (10,12)
+  6  SELECT * FROM dual;
+
+4 rows created.
+
+SQL> SELECT Movie_name from Movies;
+
+MOVIE_NAME                                                                      
+----------------------------------------                                        
+End game                                                                        
+The hunger game                                                                 
+The good doctor                                                                 
+Charlie and the Chocolate Factory                                               
+Alice in Wonderland                                                             
+The Princess Diaries                                                            
+One day                                                                         
+A Game of Thrones                                                               
+Last Christmas                                                                  
+Me before you                                                                   
+The Avengers                                                                    
+
+11 rows selected.
+
+SQL> SELECT Actor_name from Actors;
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Anne Hathaway                                                                   
+Scarlett Johansson                                                              
+Freddie Highmore                                                                
+Emilia Clarke                                                                   
+Chris Hemsworth                                                                 
+Kit Harington                                                                   
+Chris Evans                                                                     
+Nicholas Gonzalez                                                               
+Helena Bonham Carter                                                            
+Robert Downey Jr                                                                
+Sophie Turner                                                                   
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Mark Ruffalo                                                                    
+John Depp                                                                       
+Tom Hiddleston                                                                  
+Samuel L. Jackson                                                               
+
+15 rows selected.
+
+SQL> SELECT Actor_year from Actors;
+
+ACTOR_YEAR                                                                      
+----------                                                                      
+      1982                                                                      
+      1984                                                                      
+      1992                                                                      
+      1986                                                                      
+      1983                                                                      
+      1986                                                                      
+      1981                                                                      
+      1976                                                                      
+      1966                                                                      
+      1965                                                                      
+      1996                                                                      
+
+ACTOR_YEAR                                                                      
+----------                                                                      
+      1967                                                                      
+      1963                                                                      
+      1981                                                                      
+      1948                                                                      
+
+15 rows selected.
+
+SQL> SELECT Actor_name FROM Actors WHERE (Actor_year >= 1985);
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Freddie Highmore                                                                
+Emilia Clarke                                                                   
+Kit Harington                                                                   
+Sophie Turner                                                                   
+
+SQL> SELECT Episode_name FROM Episodes WHERE (Movie_id = 1);
+
+EPISODE_NAME                                                                    
+----------------------------------------                                        
+Burnt Food                                                                      
+Oliver                                                                          
+Pipes                                                                           
+Not Fake                                                                        
+
+SQL> SELECT Movie_name from Movies ORDER BY Movie_year;
+
+MOVIE_NAME                                                                      
+----------------------------------------                                        
+The Princess Diaries                                                            
+Charlie and the Chocolate Factory                                               
+A Game of Thrones                                                               
+Alice in Wonderland                                                             
+One day                                                                         
+The Avengers                                                                    
+The hunger game                                                                 
+The good doctor                                                                 
+Me before you                                                                   
+Last Christmas                                                                  
+End game                                                                        
+
+11 rows selected.
+
+SQL> SELECT Actor_name FROM Actors ORDER BY Actor_year;
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Samuel L. Jackson                                                               
+John Depp                                                                       
+Robert Downey Jr                                                                
+Helena Bonham Carter                                                            
+Mark Ruffalo                                                                    
+Nicholas Gonzalez                                                               
+Chris Evans                                                                     
+Tom Hiddleston                                                                  
+Anne Hathaway                                                                   
+Chris Hemsworth                                                                 
+Scarlett Johansson                                                              
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Emilia Clarke                                                                   
+Kit Harington                                                                   
+Freddie Highmore                                                                
+Sophie Turner                                                                   
+
+15 rows selected.
+
+SQL> SELECT Actor_name FROM Actors ORDER BY Actor_year DESC;
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Sophie Turner                                                                   
+Freddie Highmore                                                                
+Emilia Clarke                                                                   
+Kit Harington                                                                   
+Scarlett Johansson                                                              
+Chris Hemsworth                                                                 
+Anne Hathaway                                                                   
+Chris Evans                                                                     
+Tom Hiddleston                                                                  
+Nicholas Gonzalez                                                               
+Mark Ruffalo                                                                    
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Helena Bonham Carter                                                            
+Robert Downey Jr                                                                
+John Depp                                                                       
+Samuel L. Jackson                                                               
+
+15 rows selected.
+
+SQL> SELECT Actor_year, (2020-Actor_year) AS Actor_age FROM Actors;
+
+ACTOR_YEAR  ACTOR_AGE                                                           
+---------- ----------                                                           
+      1982         38                                                           
+      1984         36                                                           
+      1992         28                                                           
+      1986         34                                                           
+      1983         37                                                           
+      1986         34                                                           
+      1981         39                                                           
+      1976         44                                                           
+      1966         54                                                           
+      1965         55                                                           
+      1996         24                                                           
+
+ACTOR_YEAR  ACTOR_AGE                                                           
+---------- ----------                                                           
+      1967         53                                                           
+      1963         57                                                           
+      1981         39                                                           
+      1948         72                                                           
+
+15 rows selected.
+
+SQL> SELECT Actor_name, (2020-Actor_year) AS Actor_age FROM Actors;
+
+ACTOR_NAME                                ACTOR_AGE                             
+---------------------------------------- ----------                             
+Anne Hathaway                                    38                             
+Scarlett Johansson                               36                             
+Freddie Highmore                                 28                             
+Emilia Clarke                                    34                             
+Chris Hemsworth                                  37                             
+Kit Harington                                    34                             
+Chris Evans                                      39                             
+Nicholas Gonzalez                                44                             
+Helena Bonham Carter                             54                             
+Robert Downey Jr                                 55                             
+Sophie Turner                                    24                             
+
+ACTOR_NAME                                ACTOR_AGE                             
+---------------------------------------- ----------                             
+Mark Ruffalo                                     53                             
+John Depp                                        57                             
+Tom Hiddleston                                   39                             
+Samuel L. Jackson                                72                             
+
+15 rows selected.
+                                                                                                                                                                                               
+SQL> select Movies.Movie_name,max( Actors.Actor_year)
+  2  from Movies, Actors, Movies_actors
+  3  where Movies.Movie_id=Movies_actors.Movie_id and Actors.Actor_id=Movies_actors.Actor_id
+  4  group by Movies.Movie_name;
+
+MOVIE_NAME                               MAX(ACTORS.ACTOR_YEAR)                 
+---------------------------------------- ----------------------                 
+End game                                                   1983                 
+The good doctor                                            1992                 
+Alice in Wonderland                                        1982                 
+The Avengers                                               1984                 
+Charlie and the Chocolate Factory                          1992                 
+The Princess Diaries                                       1982                 
+A Game of Thrones                                          1996                 
+
+7 rows selected.
+
+SQL> SELECT UNIQUE Episodes.Movie_id, Movies.Movie_id FROM Movies,Episodes
+  2  WHERE Episodes.Movie_id=Movies.Movie_id;
+
+  MOVIE_ID   MOVIE_ID                                                           
+---------- ----------                                                           
+         6          6                                                           
+         1          1                                                           
+
+SQL> SELECT UNIQUE Episodes.Movie_id, Movies.Movie_name FROM Movies,Episodes
+  2  WHERE Episodes.Movie_id=Movies.Movie_id;
+
+  MOVIE_ID MOVIE_NAME                                                           
+---------- ----------------------------------------                             
+         1 The good doctor                                                      
+         6 A Game of Thrones                                                    
+
+SQL> select (3+5) from dual;
+
+     (3+5)                                                                      
+----------                                                                      
+         8                                                                      
+
+SQL> select (round(1782,-2)) from dual;
+
+(ROUND(1782,-2))                                                                
+----------------                                                                
+            1800                                                                
+
+SQL> select (round(1782,-3)) from dual;
+
+(ROUND(1782,-3))                                                                
+----------------                                                                
+            2000                                                                
+
+SQL> select * from reviews;
+
+ REVIEW_ID   MOVIE_ID EPISODE_ID                                                
+---------- ---------- ----------                                                
+REVIEW                                                                          
+--------------------------------------------------                              
+         1          1          3                                                
+Good                                                                            
+                                                                                
+         2          6          7                                                
+Great                                                                           
+                                                                                
+         3          2                                                           
+Not bad                                                                         
+                                                                                
+
+ REVIEW_ID   MOVIE_ID EPISODE_ID                                                
+---------- ---------- ----------                                                
+REVIEW                                                                          
+--------------------------------------------------                              
+         4          9                                                           
+This is the best movie                                                          
+                                                                                
+         5          9                                                           
+Fantasy                                                                         
+                                                                                
+         6          4                                                           
+Good                                                                            
+                                                                                
+
+ REVIEW_ID   MOVIE_ID EPISODE_ID                                                
+---------- ---------- ----------                                                
+REVIEW                                                                          
+--------------------------------------------------                              
+         7          6          7                                                
+The best episode in this serie                                                  
+                                                                                
+         8          9                                                           
+Good                                                                            
+                                                                                
+         9          1          5                                                
+Not bad                                                                         
+                                                                                
+
+9 rows selected.
+
+SQL> select movies.movie_name,review from reviews,movies
+  2  where movies.movie_id=reviews.movie_id;
+
+MOVIE_NAME                                                                      
+----------------------------------------                                        
+REVIEW                                                                          
+--------------------------------------------------                              
+The good doctor                                                                 
+Good                                                                            
+                                                                                
+The good doctor                                                                 
+Not bad                                                                         
+                                                                                
+Charlie and the Chocolate Factory                                               
+Not bad                                                                         
+                                                                                
+
+MOVIE_NAME                                                                      
+----------------------------------------                                        
+REVIEW                                                                          
+--------------------------------------------------                              
+The Princess Diaries                                                            
+Good                                                                            
+                                                                                
+A Game of Thrones                                                               
+Great                                                                           
+                                                                                
+A Game of Thrones                                                               
+The best episode in this serie                                                  
+                                                                                
+
+MOVIE_NAME                                                                      
+----------------------------------------                                        
+REVIEW                                                                          
+--------------------------------------------------                              
+The Avengers                                                                    
+Good                                                                            
+                                                                                
+The Avengers                                                                    
+This is the best movie                                                          
+                                                                                
+The Avengers                                                                    
+Fantasy                                                                         
+                                                                                
+
+9 rows selected.
+
+SQL> spool off
