@@ -1,0 +1,430 @@
+SQL> connect student
+Connected.
+SQL> select * from movies;
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         1                                                                      
+The good doctor                                                                 
+      2015                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         2                                                                      
+Charlie and the Chocolate Factory                                               
+      2005                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         3                                                                      
+Alice in Wonderland                                                             
+      2010                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         4                                                                      
+The Princess Diaries                                                            
+      2001                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         5                                                                      
+One day                                                                         
+      2011                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         6                                                                      
+A Game of Thrones                                                               
+      2010                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         7                                                                      
+Last Christmas                                                                  
+      2019                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         8                                                                      
+Me before you                                                                   
+      2016                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+         9                                                                      
+The Avengers                                                                    
+      2012                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+        10                                                                      
+Кухня                                                                           
+      2010                                                                      
+                                                                                
+                                                                                
+
+  MOVIE_ID                                                                      
+----------                                                                      
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+MOVIE_YEAR                                                                      
+----------                                                                      
+MOVIE_PREMISE                                                                   
+--------------------------------------------------------------------------------
+        11                                                                      
+Человек паук                                                                    
+      2019                                                                      
+                                                                                
+                                                                                
+
+11 rows selected.
+
+SQL> select movie_name from movies;
+
+MOVIE_NAME                                                                      
+--------------------------------------------------------------------------------
+The good doctor                                                                 
+Charlie and the Chocolate Factory                                               
+Alice in Wonderland                                                             
+The Princess Diaries                                                            
+One day                                                                         
+A Game of Thrones                                                               
+Last Christmas                                                                  
+Me before you                                                                   
+The Avengers                                                                    
+Кухня                                                                           
+Человек паук                                                                    
+
+11 rows selected.
+
+SQL> select * from episodes;
+
+EPISODE_ID   MOVIE_ID                                                           
+---------- ----------                                                           
+EPISODE_NAME                                                                    
+--------------------------------------------------------------------------------
+        10         10                                                           
+Ресторан «Клод Моне»                                                            
+                                                                                
+        11         10                                                           
+Вика и Макс                                                                     
+                                                                                
+         1          6                                                           
+Winter is coming                                                                
+                                                                                
+
+EPISODE_ID   MOVIE_ID                                                           
+---------- ----------                                                           
+EPISODE_NAME                                                                    
+--------------------------------------------------------------------------------
+         2          6                                                           
+The Kingsroad                                                                   
+                                                                                
+         3          1                                                           
+Burnt Food                                                                      
+                                                                                
+         4          1                                                           
+Oliver                                                                          
+                                                                                
+
+EPISODE_ID   MOVIE_ID                                                           
+---------- ----------                                                           
+EPISODE_NAME                                                                    
+--------------------------------------------------------------------------------
+         5          1                                                           
+Pipes                                                                           
+                                                                                
+         6          6                                                           
+Lord Snow                                                                       
+                                                                                
+         7          6                                                           
+A Golden Crown                                                                  
+                                                                                
+
+EPISODE_ID   MOVIE_ID                                                           
+---------- ----------                                                           
+EPISODE_NAME                                                                    
+--------------------------------------------------------------------------------
+         8          6                                                           
+You Win or You Die                                                              
+                                                                                
+         9          1                                                           
+Not Fake                                                                        
+                                                                                
+
+11 rows selected.
+
+SQL> select * from actors;
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+        16                                                                      
+Дмитрий Юрьевич                                                                 
+      1957                                                                      
+                                                                                
+        17                                                                      
+Дмитрий Владимирович                                                            
+      1967                                                                      
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+                                                                                
+         1                                                                      
+Anne Hathaway                                                                   
+      1982                                                                      
+                                                                                
+         2                                                                      
+Scarlett Johansson                                                              
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+      1984                                                                      
+                                                                                
+         3                                                                      
+Freddie Highmore                                                                
+      1992                                                                      
+                                                                                
+         4                                                                      
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+Emilia Clarke                                                                   
+      1986                                                                      
+                                                                                
+         5                                                                      
+Chris Hemsworth                                                                 
+      1983                                                                      
+                                                                                
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+         6                                                                      
+Kit Harington                                                                   
+      1986                                                                      
+                                                                                
+         7                                                                      
+Chris Evans                                                                     
+      1981                                                                      
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+                                                                                
+         8                                                                      
+Nicholas Gonzalez                                                               
+      1976                                                                      
+                                                                                
+         9                                                                      
+Helena Bonham Carter                                                            
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+      1966                                                                      
+                                                                                
+        10                                                                      
+Robert Downey Jr                                                                
+      1965                                                                      
+                                                                                
+        11                                                                      
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+Sophie Turner                                                                   
+      1996                                                                      
+                                                                                
+        12                                                                      
+Mark Ruffalo                                                                    
+      1967                                                                      
+                                                                                
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+        13                                                                      
+John Depp                                                                       
+      1963                                                                      
+                                                                                
+        14                                                                      
+Tom Hiddleston                                                                  
+      1981                                                                      
+
+  ACTOR_ID                                                                      
+----------                                                                      
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+ACTOR_YEAR                                                                      
+----------                                                                      
+                                                                                
+        15                                                                      
+Samuel L. Jackson                                                               
+      1948                                                                      
+                                                                                
+
+17 rows selected.
+
+SQL> select actor_name from acters;
+select actor_name from acters
+                       *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> select actor_name from actors;
+
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+Дмитрий Юрьевич                                                                 
+Дмитрий Владимирович                                                            
+Anne Hathaway                                                                   
+Scarlett Johansson                                                              
+Freddie Highmore                                                                
+Emilia Clarke                                                                   
+Chris Hemsworth                                                                 
+Kit Harington                                                                   
+Chris Evans                                                                     
+Nicholas Gonzalez                                                               
+Helena Bonham Carter                                                            
+
+ACTOR_NAME                                                                      
+--------------------------------------------------------------------------------
+Robert Downey Jr                                                                
+Sophie Turner                                                                   
+Mark Ruffalo                                                                    
+John Depp                                                                       
+Tom Hiddleston                                                                  
+Samuel L. Jackson                                                               
+
+17 rows selected.
+
+SQL> select episode_name from episodes;
+
+EPISODE_NAME                                                                    
+--------------------------------------------------------------------------------
+Ресторан «Клод Моне»                                                            
+Вика и Макс                                                                     
+Winter is coming                                                                
+The Kingsroad                                                                   
+Burnt Food                                                                      
+Oliver                                                                          
+Pipes                                                                           
+Lord Snow                                                                       
+A Golden Crown                                                                  
+You Win or You Die                                                              
+Not Fake                                                                        
+
+11 rows selected.
+
+SQL> spool off
