@@ -394,6 +394,8 @@ SQL> @G:\Documents\6semester\Oracle\Lab1-4\Insert_review.sql;
 Trigger created.
 
 SQL> insert into reviews_film values (22,11,'Mulan','Good');
+Added new film to Movies!                                                       
+Added new review to Reviews! 
 
 1 row created.
 
