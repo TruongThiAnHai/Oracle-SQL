@@ -1,0 +1,515 @@
+SQL> SELECT movie_name FROM movies, episodes
+  2  WHERE episodes.movie_id = movies.movie_id
+  3  UNION
+  4  SELECT movie_name FROM movies, reviews
+  5  WHERE reviews.movie_id = movies.movie_id;
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+Дневники принцессы                                                              
+Игра престолов                                                                  
+Мстители                                                                        
+Хороший доктор                                                                  
+Шоколадная фабрика                                                              
+
+SQL> SELECT movie_name FROM movies, episodes
+  2  WHERE episodes.movie_id = movies.movie_id
+  3  INTERSECT
+  4  SELECT movie_name FROM movies, reviews
+  5  WHERE reviews.movie_id = movies.movie_id;
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+Игра престолов                                                                  
+Хороший доктор                                                                  
+
+SQL> SELECT actor_name FROM actors
+  2  MINUS
+  3  SELECT actor_name FROM actors, movies_actors
+  4  WHERE movies_actors.actor_id=actors.actor_id;
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Кит Харингтон                                                                   
+Хелена Бонэм Картер                                                             
+
+SQL> connect sys as sysdba
+Connected.
+SQL> grant create view to student;
+
+Grant succeeded.
+
+SQL> connect student
+Connected.
+SQL> CREATE VIEW reviews_film AS
+  2  SELECT Review_id,Movies.Movie_id, Movies.Movie_name, Reviews.Review
+  3  FROM Reviews, Movies
+  4  WHERE Reviews.episode_id IS NULL and Reviews.Movie_id = Movies.Movie_id;
+
+View created.
+
+SQL> select * from reviews_film;
+
+ REVIEW_ID   MOVIE_ID MOVIE_NAME                                                
+---------- ---------- ---------------------------------------------             
+REVIEW                                                                          
+----------------------------------------                                        
+         3          2 Шоколадная фабрика                                        
+Неплохо                                                                         
+                                                                                
+         6          4 Дневники принцессы                                        
+Хорошо                                                                          
+                                                                                
+         4          9 Мстители                                                  
+Это лучший фильм                                                                
+                                                                                
+
+ REVIEW_ID   MOVIE_ID MOVIE_NAME                                                
+---------- ---------- ---------------------------------------------             
+REVIEW                                                                          
+----------------------------------------                                        
+         5          9 Мстители                                                  
+Фантазия                                                                        
+                                                                                
+         8          9 Мстители                                                  
+Хорошо                                                                                                                                                                                                                              
+                                                                                
+
+SQL> create view films (film_id, film_name,film_year) as
+  2  select movies.movie_id, movies.movie_name, movies.movie_year
+  3  from movies
+  4  minus
+  5  select movies.movie_id, movies.movie_name, movies.movie_year
+  6  from movies, episodes
+  7  WHERE Episodes.Movie_id=Movies.Movie_id;
+
+View created.
+
+SQL> select * from films;
+
+FILM_ID FILM_NAME                                      FILM_YEAR             
+---------- --------------------------------------------- ----------             
+         2 Шоколадная фабрика                                  2005             
+         3 Алиса в стране чудес                                2010             
+         4 Дневники принцессы                                  2001             
+         5 Однажды                                             2011             
+         7 Прошлым Рождеством                                  2019             
+         8 Я перед тобой                                       2016             
+         9 Мстители                                            2012             
+
+7 rows selected.
+
+SQL> create view series (serie_name, serie_year) as
+  2  select unique movies.movie_name, movies.movie_year
+  3  from movies,episodes
+  4  where episodes.movie_id = movies.movie_id;
+
+View created.
+
+SQL> select *from series;
+
+SERIE_NAME                                    SERIE_YEAR                        
+--------------------------------------------- ----------                        
+Игра престолов                                      2010                        
+Хороший доктор                                      2015                        
+
+SQL> CREATE VIEW Mov_act AS
+  2  SELECT Movies.Movie_name, Actors.Actor_name
+  3  FROM Movies, Actors, Movies_actors
+  4  WHERE Movies.Movie_id = Movies_actors.Movie_id and Actors.Actor_id = Movies_actors.Actor_id;
+
+View created.
+
+SQL> select * from Mov_act
+  2  ;
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Хороший доктор                                                                  
+Фредди Хаймор                                                                   
+                                                                                
+Хороший доктор                                                                  
+Николас Гонсалес                                                                
+                                                                                
+Шоколадная фабрика                                                              
+Фредди Хаймор                                                                   
+                                                                                
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Шоколадная фабрика                                                              
+Джон Депп                                                                       
+                                                                                
+Алиса в стране чудес                                                            
+Энн Хэтэуэй                                                                     
+                                                                                
+Алиса в стране чудес                                                            
+Джон Депп                                                                       
+                                                                                
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Дневники принцессы                                                              
+Энн Хэтэуэй                                                                     
+                                                                                
+Игра престолов                                                                  
+Эмилия Кларк                                                                    
+                                                                                
+Игра престолов                                                                  
+Софи Тернер                                                                     
+                                                                                
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Мстители                                                                        
+Скарлетт Йоханссон                                                              
+                                                                                
+Мстители                                                                        
+Крис Хемсворт                                                                   
+                                                                                
+Мстители                                                                        
+Крис Эванс                                                                      
+                                                                                
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Мстители                                                                        
+Роберт Дауни-младший                                                            
+                                                                                
+Мстители                                                                        
+Марк Руффало                                                                    
+                                                                                
+Мстители                                                                        
+Том Хиддлстон                                                                   
+                                                                                
+
+MOVIE_NAME                                                                      
+---------------------------------------------                                   
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Мстители                                                                        
+Сэмюэл Л. Джексон                                                               
+                                                                                
+
+16 rows selected.
+
+SQL> CREATE VIEW young_act AS
+  2  SELECT Actor_name FROM Actors WHERE (Actor_year >= 1985);
+
+View created.
+
+SQL> select * from young_act;
+
+ACTOR_NAME                                                                      
+----------------------------------------                                        
+Фредди Хаймор                                                                   
+Эмилия Кларк                                                                    
+Кит Харингтон                                                                   
+Софи Тернер  
+
+SQL> connect hr
+Connected.
+SQL> @$ORACLE_HOME/rdbms/admin/utlxplan.sql
+SP2-0310: unable to open file "$ORACLE_HOME/rdbms/admin/utlxplan.sql"
+SQL> @ORACLE_HOME/rdbms/admin/utlxplan.sql
+SP2-0310: unable to open file "ORACLE_HOME/rdbms/admin/utlxplan.sql"
+SQL> @?/rdbms/admin/utlxplan.sql
+
+Table created.
+
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> @C:\Oracle18cXE\dbhomeXE\sqlplus\admin\plustrce.sql
+SQL> 
+SQL> drop role plustrace;
+drop role plustrace
+          *
+ERROR at line 1:
+ORA-01919: role 'PLUSTRACE' does not exist
+
+
+SQL> create role plustrace;
+
+Role created.
+
+SQL> 
+SQL> grant select on v_$sesstat to plustrace;
+
+Grant succeeded.
+
+SQL> grant select on v_$statname to plustrace;
+
+Grant succeeded.
+
+SQL> grant select on v_$mystat to plustrace;
+
+Grant succeeded.
+
+SQL> grant plustrace to dba with admin option;
+
+Grant succeeded.
+
+SQL> 
+SQL> set echo off
+SQL> grant plustrace to hr;
+
+Grant succeeded.
+
+SQL> connect student
+Connected.
+SQL> set autotrace on
+SP2-0618: Cannot find the Session Identifier.  Check PLUSTRACE role is enabled
+SP2-0611: Error enabling STATISTICS report
+
+SQL> connect sys as sysdba
+Connected.
+SQL> grant plustrace to student;
+
+Grant succeeded.
+
+SQL> connect student
+Connected.
+SQL> set autotrace on
+SQL> select film_name,film_year from films
+  2  where film_year>2010;
+
+FILM_NAME                                      FILM_YEAR
+--------------------------------------------- ----------
+Мстители                                            2012
+Однажды                                             2011
+Прошлым Рождеством                                  2019
+Я перед тобой                                       2016
+
+4 rows selected.
+
+
+Execution Plan
+----------------------------------------------------------
+Plan hash value: 3388885864
+
+--------------------------------------------------------------------------------
+--
+
+| Id  | Operation             | Name     | Rows  | Bytes | Cost (%CPU)| Time
+ |
+
+--------------------------------------------------------------------------------
+--
+
+|   0 | SELECT STATEMENT      |          |     5 |   185 |    11  (19)| 00:00:01
+ |
+
+|   1 |  VIEW                 | FILMS    |     5 |   185 |    11  (19)| 00:00:01
+ |
+
+|   2 |   MINUS               |          |       |       |            |
+ |
+
+|   3 |    SORT UNIQUE        |          |     5 |   180 |     4  (25)| 00:00:01
+ |
+
+|*  4 |     TABLE ACCESS FULL | MOVIES   |     5 |   180 |     3   (0)| 00:00:01
+ |
+
+|   5 |    SORT UNIQUE        |          |     2 |    82 |     7  (15)| 00:00:01
+ |
+
+|*  6 |     HASH JOIN SEMI    |          |     2 |    82 |     6   (0)| 00:00:01
+ |
+
+|*  7 |      TABLE ACCESS FULL| MOVIES   |     5 |   190 |     3   (0)| 00:00:01
+ |
+
+|   8 |      TABLE ACCESS FULL| EPISODES |     9 |    27 |     3   (0)| 00:00:01
+ |
+
+--------------------------------------------------------------------------------
+--
+
+
+Predicate Information (identified by operation id):
+---------------------------------------------------
+
+   4 - filter("MOVIES"."MOVIE_YEAR">2010)
+   6 - access("EPISODES"."MOVIE_ID"="MOVIES"."MOVIE_ID")
+   7 - filter("MOVIES"."MOVIE_YEAR">2010)
+
+
+Statistics
+----------------------------------------------------------
+          0  recursive calls
+          0  db block gets
+         18  consistent gets
+          0  physical reads
+          0  redo size
+        797  bytes sent via SQL*Net to client
+        624  bytes received via SQL*Net from client
+          2  SQL*Net roundtrips to/from client
+          2  sorts (memory)
+          0  sorts (disk)
+          4  rows processed
+
+SQL> connect sys as sysdba
+Enter password:
+Connected.
+SQL> grant create  MATERIALIZED VIEW to student;
+
+Grant succeeded.
+
+SQL> connect student
+Enter password:
+Connected.
+SQL>  CREATE MATERIALIZED VIEW films (film_name,film_year) as
+  2  select movies.movie_name, movies.movie_year
+  3    from movies
+  4    minus
+  5    select movies.movie_name, movies.movie_year
+  6    from movies, episodes
+  7    WHERE Episodes.Movie_id=Movies.Movie_id;
+
+Materialized view created.
+
+SQL> connect sys as sysdba
+Connected.
+SQL> grant create trigger to student;
+
+Grant succeeded.
+
+SQL> connect  student
+Connected.
+SQL> @G:\Documents\6semester\Oracle\Lab1-4\Insert_review.sql;
+
+Trigger created.
+
+SQL> insert into reviews_film values (22,11,'Mulan','Good');
+
+1 row created.
+
+SQL> select *from movies;
+
+  MOVIE_ID MOVIE_NAME                                    MOVIE_YEAR MOVIE_BUDGET
+---------- --------------------------------------------- ---------- ------------
+         1 Хороший доктор                                      2015      6000000
+         2 Шоколадная фабрика                                  2005    150000000
+         3 Алиса в стране чудес                                2010    200000000
+         4 Дневники принцессы                                  2001     26000000
+         5 Однажды                                             2011     15000000
+         6 Игра престолов                                      2010     60000000
+         7 Прошлым Рождеством                                  2019     25000000
+         8 Я перед тобой                                       2016     20000000
+         9 Мстители                                            2012    220000000
+        11 Mulan                                                                
+
+10 rows selected.
+
+SQL> select * from reviews;
+
+ REVIEW_ID   MOVIE_ID EPISODE_ID REVIEW                                         
+---------- ---------- ---------- ----------------------------------------       
+         1          1          3 Хорошо                                         
+         2          6          7 отлично                                        
+         3          2            Неплохо                                        
+         4          9            Это лучший фильм                               
+         5          9            Фантазия                                       
+         6          4            Хорошо                                         
+         8          9            Хорошо                                         
+         9          1          5 Неплохо                                        
+        22         11            Good                                           
+
+9 rows selected.
+
+SQL> select * from reviews_film;
+
+ REVIEW_ID   MOVIE_ID MOVIE_NAME                                                
+---------- ---------- ---------------------------------------------             
+REVIEW                                                                          
+----------------------------------------                                        
+         3          2 Шоколадная фабрика                                        
+Неплохо                                                                         
+                                                                                
+         6          4 Дневники принцессы                                        
+Хорошо                                                                          
+                                                                                
+         4          9 Мстители                                                  
+Это лучший фильм                                                                
+                                                                                
+
+ REVIEW_ID   MOVIE_ID MOVIE_NAME                                                
+---------- ---------- ---------------------------------------------             
+REVIEW                                                                          
+----------------------------------------                                        
+         5          9 Мстители                                                  
+Фантазия                                                                        
+                                                                                
+         8          9 Мстители                                                  
+Хорошо                                                                          
+                                                                                
+        22         11 Mulan                                                     
+Good                                                                            
+                                                                                
+
+6 rows selected.
+
+SQL> @G:\Documents\6semester\Oracle\Lab1-4\delete_review.sql;
+
+Trigger created.
+
+SQL> delete from reviews_film where review_id=22;
+
+1 row deleted.
+
+SQL> select * from reviews_film;
+
+ REVIEW_ID   MOVIE_ID MOVIE_NAME                                                
+---------- ---------- ---------------------------------------------             
+REVIEW                                                                          
+----------------------------------------                                        
+         3          2 Шоколадная фабрика                                        
+Неплохо                                                                         
+                                                                                
+         6          4 Дневники принцессы                                        
+Хорошо                                                                          
+                                                                                
+         4          9 Мстители                                                  
+Это лучший фильм                                                                
+                                                                                
+
+ REVIEW_ID   MOVIE_ID MOVIE_NAME                                                
+---------- ---------- ---------------------------------------------             
+REVIEW                                                                          
+----------------------------------------                                        
+         5          9 Мстители                                                  
+Фантазия                                                                        
+                                                                                
+         8          9 Мстители                                                  
+Хорошо                                                                          
+                                                                                
+
+SQL> select * from reviews;
+
+ REVIEW_ID   MOVIE_ID EPISODE_ID REVIEW                                         
+---------- ---------- ---------- ----------------------------------------       
+         1          1          3 Хорошо                                         
+         2          6          7 отлично                                        
+         3          2            Неплохо                                        
+         4          9            Это лучший фильм                               
+         5          9            Фантазия                                       
+         6          4            Хорошо                                         
+         8          9            Хорошо                                         
+         9          1          5 Неплохо                                        
+
+8 rows selected.
+
+SQL> spool off
