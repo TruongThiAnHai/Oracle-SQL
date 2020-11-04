@@ -1,0 +1,43 @@
+@startuml
+skinparam linetype ortho
+entity "Movies" as s {
+*movie_id: NUMBER (PK)
+--
+*movie_name: NVARCHAR2
+movie_year: NUMBER
+movie_premise: NUMBER
+}
+
+entity "Actors" as a {
+*actor_id: NUMBER (PK)
+--
+*actor_name: NVARCHAR2
+actor_year: NUMBER
+}
+
+entity "Movies_actors" as sa {
+*actor_id: NUMBER
+*movie_id: NUMBER
+}
+
+entity "Episodes" as e {
+*episode_id: NUMBER (PK)
+--
+*movie_id: NUMBER (FK)
+*episode_name: NVARCHAR2
+}
+
+entity "Reviews" as r {
+*review_id: NUMBER (PK)
+--
+*movie_id: NUMBER (FK)
+episode_id: NUMBER (FK)
+*review: NVARCHAR2
+}
+
+r }o--|| s
+s  ||--o{ sa
+sa }o--|| a
+e }o--|| s
+e ||--o{ r
+@enduml

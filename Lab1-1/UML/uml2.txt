@@ -1,0 +1,27 @@
+@startuml
+
+entity "information_of_movie" as i {
+movie_id
+--
+* movie_name
+movie_year
+actor_id
+}
+
+entity "actors" as a {
+actor_id
+--
+* actor_name
+* actor_age
+}
+
+entity "movies_actors" as ma
+{
+* actor_id
+* movie_id
+}
+
+i  ||--o{ ma
+ma }o--|| a
+
+@enduml
