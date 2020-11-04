@@ -1,0 +1,89 @@
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> CREATE USER anhai IDENTIFIED BY anhai;
+
+User created.
+
+SQL> GRANT SELECT ANY TABLE, INSERT ANY TABLE, UPDATE ANY TABLE, DELETE ANY TABLE TO anhai
+  2  ;
+
+Grant succeeded.
+
+SQL> GRANT CREATE SESSION TO anhai;
+
+Grant succeeded.
+
+SQL> connect anhai
+Connected.
+SQL> select * from Movies;
+select * from Movies
+              *
+ERROR at line 1:
+ORA-00942: table or view does not exist 
+
+
+SQL> select * from student.Movies;
+
+  MOVIE_ID MOVIE_NAME                                    MOVIE_YEAR MOVIE_BUDGET
+---------- --------------------------------------------- ---------- ------------
+         1 Хороший доктор                                      2015      6000000
+         2 Шоколадная фабрика                                  2005    150000000
+         3 Алиса в стране чудес                                2010    200000000
+         4 Дневники принцессы                                  2001     26000000
+         5 Однажды                                             2011     15000000
+         6 Игра престолов                                      2010     60000000
+         7 Прошлым Рождеством                                  2019     25000000
+         8 Я перед тобой                                       2016     20000000
+         9 Мстители                                            2012    220000000
+        11 Mulan                                                                
+
+10 rows selected.
+
+SQL> SELECT * FROM Student.Actors;
+
+  ACTOR_ID ACTOR_NAME                               ACTOR_YEAR                  
+---------- ---------------------------------------- ----------                  
+         1 Энн Хэтэуэй                                    1982                  
+         2 Скарлетт Йоханссон                             1984                  
+         3 Фредди Хаймор                                  1992                  
+         4 Эмилия Кларк                                   1986                  
+         5 Крис Хемсворт                                  1983                  
+         6 Кит Харингтон                                  1986                  
+         7 Крис Эванс                                     1981                  
+         8 Николас Гонсалес                               1976                  
+         9 Хелена Бонэм Картер                            1966                  
+        10 Роберт Дауни-младший                           1965                  
+        11 Софи Тернер                                    1996                  
+
+  ACTOR_ID ACTOR_NAME                               ACTOR_YEAR                  
+---------- ---------------------------------------- ----------                  
+        12 Марк Руффало                                   1967                  
+        13 Джон Депп                                      1963                  
+        14 Том Хиддлстон                                  1981                  
+        15 Сэмюэл Л. Джексон                              1948                  
+
+15 rows selected.
+
+SQL> connect student
+Connected.
+SQL> UPDATE Movies SET Movie_name = 'No name' WHERE Movie_ID=9;
+
+1 row updated.
+
+SQL> SELECT * FROM Movies;
+
+  MOVIE_ID MOVIE_NAME                                    MOVIE_YEAR MOVIE_BUDGET
+---------- --------------------------------------------- ---------- ------------
+         1 The good doctor                                     2015      6000000
+         2 The chocolate factory                               2005    150000000
+         3 Alice in the wonderland                             2010    200000000
+         4 Princess diaries                                    2001     26000000
+         5 Once upon a time                                    2011     15000000
+         6 Game of thrones                                     2010     60000000
+         7 Last Christmas                                      2019     25000000
+         8 Me before you                                       2016     20000000
+         9 No name                                             2012    220000000
+
+9 rows selected.
