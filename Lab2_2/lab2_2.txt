@@ -1,0 +1,177 @@
+SQL> connect sys as sysdba
+Connected.
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> CREATE USER admin IDENTIFIED BY admin;
+
+User created.
+
+SQL> GRANT DBA TO admin;
+
+Grant succeeded.
+
+SQL> CREATE PUBLIC SYNONYM Movies FOR student.Movies;
+
+Synonym created.
+
+SQL> CREATE PUBLIC SYNONYM Actors FOR student.Actors;
+
+Synonym created.
+
+SQL> CREATE PUBLIC SYNONYM Movies_Actors FOR student.Movies_ACtors;
+
+Synonym created.
+
+SQL> CREATE PUBLIC SYNONYM Episodes FOR student.Episodes;
+
+Synonym created.
+
+SQL> CREATE PUBLIC SYNONYM Reviews FOR student.Reviews;
+
+Synonym created.
+
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> CREATE ROLE manager;
+
+Role created.
+
+SQL> GRANT CREATE TABLE, CREATE SESSION, CREATE VIEW, UNLIMITED TABLESPACE TO manager;
+GRANT CREATE TABLE, CREATE SESSION, CREATE VIEW, UNLIMITED TABLESPACE TO manager
+*
+ERROR at line 1:
+ORA-01931: cannot grant UNLIMITED TABLESPACE to a role 
+
+
+SQL> GRANT CREATE TABLE, CREATE SESSION, CREATE VIEW TO manager;
+
+Grant succeeded.
+
+SQL> GRANT SELECT ANY TABLE, INSERT ANY TABLE, UPDATE ANY TABLE, DELETE ANY TABLE TO manager;
+
+Grant succeeded.
+
+SQL> CREATE USER manager1 IDENTIFIED BY manager1;
+
+User created.
+
+SQL> GRANT manager TO student, manager1;
+
+Grant succeeded.
+
+SQL> GRANT UNLIMITED TABLESPACE TO manager1;
+
+Grant succeeded.
+
+SQL> CREATE ROLE usera;
+
+Role created.
+
+SQL> GRANT CREATE SESSION TO usera;
+
+Grant succeeded.
+
+SQL> connect student
+Connected.
+SQL> CREATE VIEW view_movies AS
+  2  SELECT Movie_id, Movie_name, Movie_year FROM Movies;
+
+View created.
+
+SQL> CREATE VIEW view_actors AS
+  2  SELECT Actor_id, Actor_name FROM Actors;
+
+View created.
+
+SQL>  CREATE PUBLIC SYNONYM view_m FOR student.view_movies;
+ CREATE PUBLIC SYNONYM view_m FOR student.view_movies
+*
+ERROR at line 1:
+ORA-01031: insufficient privileges 
+
+
+SQL> connect admin
+Connected.
+SQL> CREATE PUBLIC SYNONYM view_movies FOR student.view_movies;
+
+Synonym created.
+
+SQL> CREATE PUBLIC SYNONYM view_actors FOR student.view_actors;
+
+Synonym created.
+
+SQL> GRANT SELECT ON view_movies TO usera;
+
+Grant succeeded.
+
+SQL> GRANT SELECT ON view_actors TO usera;
+
+Grant succeeded.
+
+SQL> GRANT SELECT ON episodes TO usera;
+
+Grant succeeded.
+
+SQL> GRANT SELECT ON reviews TO usera;
+
+Grant succeeded.
+
+SQL> GRANT INSERT ON reviews TO usera;
+
+Grant succeeded.
+
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> CREATE USER user1 IDENTIFIED BY user1;
+
+User created.
+
+SQL> CREATE USER user2 IDENTIFIED BY user2;
+
+User created.
+
+SQL> GRANT usera TO user1,user2;
+
+Grant succeeded.
+
+SQL> GRANT usera TO user1,user2;
+
+Grant succeeded.
+
+SQL> CONNECT SYS AS SYSDBA
+Connected.
+SQL> ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+
+Session altered.
+
+SQL> ALTER SYSTEM SET RESOURCE_LIMIT = TRUE;
+
+System altered.
+
+SQL> CREATE PROFILE app_user LIMIT
+  2   FAILED_LOGIN_ATTEMPTS 3
+  3  SESSIONS_PER_USER UNLIMITED
+  4   CPU_PER_SESSION UNLIMITED
+  5   CPU_PER_CALL 3000
+  6    CONNECT_TIME 30
+  7   IDLE_TIME 15
+  8   LOGICAL_READS_PER_SESSION DEFAULT
+  9    LOGICAL_READS_PER_CALL 1000;
+
+Profile created.
+
+SQL> ALTER USER user1 PROFILE app_user;
+
+User altered.
+
+SQL> ALTER USER user2 PROFILE app_user;
+
+User altered.
+
+SQL> spool off
