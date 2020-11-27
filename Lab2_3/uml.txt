@@ -1,0 +1,45 @@
+@startuml
+skinparam linetype ortho
+entity "Address_Store" as a {
+*Address_id: NUMBER (PK)
+--
+*City: NVARCHAR2
+*Country: NVARCHAR2
+}
+
+entity "SalesPersons" as s {
+*Person_id: NUMBER (PK)
+--
+*Address_id: NUMBER
+*Person_name: NVARCHAR2
+Person_PhoneNumber: NUMBER
+}
+
+entity "Products" as p {
+*Product_id: NUMBER (PK)
+--
+*Product_name: NVARCHAR2
+*Product_price: NUMBER
+}
+
+
+entity "Orders" as o {
+*Order_id: NUMBER (PK)
+--
+*Person_id: NUMBER
+Order_info: NVARCHAR2
+Order_date: DATE
+}
+entity "Order_Product" as op {
+*Order_id: NUMBER
+*Product_id: NUMBER
+--
+*Number_Product: NUMBER
+}
+
+
+a ||--|| s
+op }o--|| o
+op }o--|| p
+s ||--||o
+@enduml

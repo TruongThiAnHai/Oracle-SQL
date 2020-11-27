@@ -1,0 +1,2577 @@
+SQL> CREATE TABLE bonuses (Person_id NUMBER (3, 0), bonus NUMBER DEFAULT 50);
+
+Table created.
+
+SQL> INSERT INTO bonuses (Person_id)
+  2  (SELECT Person_id FROM
+  3  (SELECT o.Person_id, COUNT (o.Person_id) a FROM Orders o
+  4  GROUP by Person_id) WHERE a>=2);
+
+14 rows created.
+
+
+SQL> select * from bonuses;
+
+ PERSON_ID      BONUS                                                           
+---------- ----------                                                           
+         1         50                                                           
+         7         50                                                           
+        15         50                                                           
+         2         50                                                           
+         8         50                                                           
+        11         50                                                           
+        12         50                                                           
+        17         50                                                           
+        21         50                                                           
+         5         50                                                           
+        18         50                                                           
+
+ PERSON_ID      BONUS                                                           
+---------- ----------                                                           
+         3         50                                                           
+        19         50                                                           
+        16         50                                                           
+
+14 rows selected.
+
+SQL> MERGE INTO bonuses b
+  2  USING (SELECT Person_id, City FROM SalesPersons s, Address_Store a
+  3  WHERE s.Address_id = a.Address_id and a.City = 'Moscow') pa
+  4  ON (b.Person_id = pa.Person_id)
+  5  WHEN MATCHED THEN UPDATE SET b.bonus = b.bonus + 25
+  6  WHEN NOT MATCHED THEN INSERT (b.Person_id, b.bonus)
+  7  VALUES (pa.Person_id, 25);
+
+6 rows merged.
+
+SQL> select * from bonuses;
+
+ PERSON_ID      BONUS                                                           
+---------- ----------                                                           
+         1         75                                                           
+         7         50                                                           
+        15         50                                                           
+         2         50                                                           
+         8         50                                                           
+        11         50                                                           
+        12         50                                                           
+        17         50                                                           
+        21         75                                                           
+         5         50                                                           
+        18         50                                                           
+
+ PERSON_ID      BONUS                                                           
+---------- ----------                                                           
+         3         50                                                           
+        19         50                                                           
+        16         50                                                           
+        14         25                                                           
+        10         25                                                           
+         9         25                                                           
+        24         25                                                           
+
+18 rows selected.
+
+SQL> SELECT s.Person_id, p.Product_id, a.Country, SUM (p.Product_Price*op.Number_Product) Sum
+  2  FROM Products p
+  3  INNER JOIN Order_Product op ON op.Product_id = p.Product_id
+  4  INNER JOIN Orders o ON op.Order_id = o.Order_id
+  5  INNER JOIN SalesPersons s ON o.Person_id = s.Person_id
+  6  INNER JOIN Address_Store a ON a.Address_id = s.Address_id
+  7  GROUP BY CUBE (p.Product_id, a.Country, s.Person_id);
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+                                   2461
+         1                          136
+         2                          164
+         3                          231
+         4                           16
+         5                          145
+         6                           10
+         7                           70
+         8                          165
+         9                           20
+        10                           30
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        11                          171
+        12                           66
+        13                           50
+        14                           75
+        15                          155
+        16                          141
+        17                          169
+        18                          106
+        19                           85
+        20                           30
+        21                          285
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        22                           16
+        23                          100
+        24                           25
+                      UK            548
+         7            UK             70
+         8            UK            165
+        12            UK             66
+        16            UK            141
+        18            UK            106
+                      USA           587
+         4            USA            16
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         6            USA            10
+        11            USA           171
+        13            USA            50
+        15            USA           155
+        19            USA            85
+        23            USA           100
+                      Russia       1326
+         1            Russia        136
+         2            Russia        164
+         3            Russia        231
+         5            Russia        145
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         9            Russia         20
+        10            Russia         30
+        14            Russia         75
+        17            Russia        169
+        20            Russia         30
+        21            Russia        285
+        22            Russia         16
+        24            Russia         25
+                    1               170
+         1          1                10
+         3          1                10
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         5          1                10
+         7          1                10
+         8          1                20
+        12          1                20
+        13          1                10
+        15          1                20
+        17          1                10
+        18          1                10
+        21          1                30
+        23          1                10
+                    1 UK             60
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         7          1 UK             10
+         8          1 UK             20
+        12          1 UK             20
+        18          1 UK             10
+                    1 USA            40
+        13          1 USA            10
+        15          1 USA            20
+        23          1 USA            10
+                    1 Russia         70
+         1          1 Russia         10
+         3          1 Russia         10
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         5          1 Russia         10
+        17          1 Russia         10
+        21          1 Russia         30
+                    2               150
+         1          2                75
+        23          2                75
+                    2 USA            75
+        23          2 USA            75
+                    2 Russia         75
+         1          2 Russia         75
+                    3               480
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         2          3                64
+         3          3                96
+         4          3                16
+        11          3                80
+        16          3                96
+        17          3                32
+        21          3                80
+        22          3                16
+                    3 UK             96
+        16          3 UK             96
+                    3 USA            96
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         4          3 USA            16
+        11          3 USA            80
+                    3 Russia        288
+         2          3 Russia         64
+         3          3 Russia         96
+        17          3 Russia         32
+        21          3 Russia         80
+        22          3 Russia         16
+                    4               220
+         7          4                60
+         9          4                20
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        21          4               140
+                    4 UK             60
+         7          4 UK             60
+                    4 Russia        160
+         9          4 Russia         20
+        21          4 Russia        140
+                    5               700
+         1          5                25
+         2          5               100
+         3          5               125
+         5          5               100
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        14          5                75
+        15          5               125
+        17          5                75
+        18          5                50
+        24          5                25
+                    5 UK             50
+        18          5 UK             50
+                    5 USA           125
+        15          5 USA           125
+                    5 Russia        525
+         1          5 Russia         25
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+         2          5 Russia        100
+         3          5 Russia        125
+         5          5 Russia        100
+        14          5 Russia         75
+        17          5 Russia         75
+        24          5 Russia         25
+                    6               255
+         8          6                75
+        10          6                30
+        11          6                45
+        16          6                45
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        19          6                15
+        20          6                30
+        23          6                15
+                    6 UK            120
+         8          6 UK             75
+        16          6 UK             45
+                    6 USA            75
+        11          6 USA            45
+        19          6 USA            15
+        23          6 USA            15
+                    6 Russia         60
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        10          6 Russia         30
+        20          6 Russia         30
+                    7               210
+         5          7                35
+         8          7                70
+        19          7                70
+        21          7                35
+                    7 UK             70
+         8          7 UK             70
+                    7 USA            70
+        19          7 USA            70
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+                    7 Russia         70
+         5          7 Russia         35
+        21          7 Russia         35
+                    8                80
+         6          8                10
+        11          8                20
+        12          8                20
+        15          8                10
+        18          8                20
+                    8 UK             40
+        12          8 UK             20
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        18          8 UK             20
+                    8 USA            40
+         6          8 USA            10
+        11          8 USA            20
+        15          8 USA            10
+                    9                40
+        13          9                40
+                    9 USA            40
+        13          9 USA            40
+                   10               156
+         1         10                26
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        11         10                26
+        12         10                26
+        17         10                52
+        18         10                26
+                   10 UK             52
+        12         10 UK             26
+        18         10 UK             26
+                   10 USA            26
+        11         10 USA            26
+                   10 Russia         78
+         1         10 Russia         26
+
+ PERSON_ID PRODUCT_ID COUNTR        SUM
+---------- ---------- ------ ----------
+        17         10 Russia         52
+
+199 rows selected.
+
+SQL> SELECT *
+  2  FROM (SELECT p.Product_id, a.Country, SUM (op.Number_Product) Qty
+  3  FROM Products p
+  4  INNER JOIN Order_Product op ON op.Product_id = p.Product_id
+  5  INNER JOIN Orders o ON op.Order_id = o.Order_id
+  6  INNER JOIN SalesPersons s ON o.Person_id = s.Person_id
+  7  INNER JOIN Address_Store a ON a.Address_id = s.Address_id
+  8  GROUP BY GROUPING SETS ((p.Product_id, a.Country))) PIVOT (SUM (Qty)
+  9  FOR Country
+ 10  IN ('Russia','USA','UK'));
+
+PRODUCT_ID   'Russia'      'USA'       'UK'
+---------- ---------- ---------- ----------
+         6          4          5          8
+         7          2          2          2
+         1          7          4          6
+         2          5          5
+         8                     4          4
+         5         21          5          2
+         4          8                     3
+        10          3          1          2
+         9                     1
+         3         18          6          6
+
+10 rows selected.
+
+SQL> connect sys as sysdba
+Enter password:
+Connected.
+SQL> grant create, replace attribute dimension to student;
+grant create, replace attribute dimension to student
+              *
+ERROR at line 1:
+ORA-00990: missing or invalid privilege
+
+
+SQL> grant create attribute dimension to student;
+
+Grant succeeded.
+
+SQL> connect student
+Enter password:
+Connected.
+SQL> CREATE OR REPLACE ATTRIBUTE DIMENSION Address_dim
+  2  DIMENSION TYPE STANDARD
+  3  USING Address_Store
+  4  ATTRIBUTES (City, Country)
+  5  LEVEL CITY
+  6  KEY City
+  7  LEVEL COUNTRY
+  8  KEY Country;
+
+Attribute dimension created.
+
+SQL> connect sys as sysdba
+Enter password:
+Connected.
+SQL> grant create hierarchy to student
+  2  ;
+
+Grant succeeded.
+
+SQL> connect student
+Enter password:
+Connected.
+SQL> CREATE OR REPLACE HIERARCHY Address_hier
+  2  USING Address_dim
+  3  (City CHILD OF
+  4  Country);
+
+Hierarchy created.
+
+SQL> SELECT column_name from ALL_HIER_COLUMNS WHERE HIER_NAME ='ADDRESS_HIER';
+
+COLUMN_NAME
+--------------------------------------------------------------------------------
+CITY
+COUNTRY
+DEPTH
+HIER_ORDER
+IS_LEAF
+LEVEL_NAME
+MEMBER_CAPTION
+MEMBER_DESCRIPTION
+MEMBER_NAME
+MEMBER_UNIQUE_NAME
+PARENT_LEVEL_NAME
+
+COLUMN_NAME
+--------------------------------------------------------------------------------
+PARENT_UNIQUE_NAME
+
+12 rows selected.
+
+SQL> connect sys as sysdba
+Enter password:
+Connected.
+SQL> GRANT CREATE ANALYTIC VIEW TO student;
+
+Grant succeeded.
+
+SQL> connect student
+Enter password:
+Connected.
+SQL> alter table Order_Product add Address_id NUMBER(3,0);
+
+Table altered.
+
+SQL> alter table Order_Product
+  2  add constraint FK foreign key (Address_id)
+  3  references Address_Store(Address_id;
+references Address_Store(Address_id
+                                  *
+ERROR at line 3:
+ORA-00907: missing right parenthesis
+
+
+SQL> alter table Order_Product
+  2  add constraint FK foreign key (Address_id)
+  3  references Address_Store(Address_id);
+
+Table altered.
+
+SQL> MERGE INTO Order_Product op
+  2  USING (SELECT s.Address_id, o.Order_id FROM SalesPersons s, Orders o
+  3  WHERE s.Person_id = o.Person_id) a
+  4  ON (op.Order_id = a.Order_id)
+  5  WHEN MATCHED THEN UPDATE SET op.Address_id = a.Address_id;
+
+73 rows merged.
+
+
+SQL> CREATE OR REPLACE ATTRIBUTE DIMENSION Address_dim
+  2  DIMENSION TYPE STANDARD
+  3  USING Address_Store
+  4  ATTRIBUTES (Address_id, City, Country)
+  5  LEVEL Id
+  6  KEY Address_id
+  7  LEVEL CITY
+  8  KEY City
+  9  LEVEL COUNTRY
+ 10  KEY Country;
+
+Attribute dimension created.
+
+SQL> CREATE OR REPLACE HIERARCHY Address_hier
+  2  USING Address_dim
+  3  ( Id CHILF OF
+  4  City CHILD OF
+  5  Country);
+( Id CHILF OF
+     *
+ERROR at line 3:
+ORA-02000: missing ) keyword
+
+
+SQL> CREATE OR REPLACE HIERARCHY Address_hier
+  2  USING Address_dim
+  3  (Id CHILD OF
+  4  City CHILD OF
+  5  Country);
+
+Hierarchy created.
+
+SQL> SELECT column_name from ALL_HIER_COLUMNS WHERE HIER_NAME = 'ADDRESS_HIER';
+
+COLUMN_NAME
+--------------------------------------------------------------------------------
+ADDRESS_ID
+CITY
+COUNTRY
+DEPTH
+HIER_ORDER
+IS_LEAF
+LEVEL_NAME
+MEMBER_CAPTION
+MEMBER_DESCRIPTION
+MEMBER_NAME
+MEMBER_UNIQUE_NAME
+
+COLUMN_NAME
+--------------------------------------------------------------------------------
+PARENT_LEVEL_NAME
+PARENT_UNIQUE_NAME
+
+13 rows selected.
+
+SQL> CREATE OR REPLACE ATTRIBUTE DIMENSION Address_dim
+  2  DIMENSION TYPE STANDARD
+  3  USING Address_Store
+  4  ATTRIBUTES (Address_id, City, Country)
+  5  LEVEL Id
+  6  KEY Address_id
+  7  DETERMINES (City)
+  8  LEVEL CITY
+  9  KEY City
+ 10  DETERMINES (Country)
+ 11  LEVEL COUNTRY
+ 12  KEY Country;
+
+Attribute dimension created.
+
+SQL> CREATE OR REPLACE HIERARCHY Address_hier
+  2  USING Address_dim
+  3  (Id CHILD OF
+  4  City CHILD OF
+  5  Country);
+
+Hierarchy created.
+
+SQL> SELECT * FROM USER_HIER_LEVELS WHERE hier_name = 'ADDRESS_HIER';
+
+HIER_NAME
+--------------------------------------------------------------------------------
+LEVEL_NAME
+--------------------------------------------------------------------------------
+ ORDER_NUM ORIGIN_CON_ID
+---------- -------------
+ADDRESS_HIER
+CITY
+         1             1
+
+ADDRESS_HIER
+COUNTRY
+         0             1
+
+HIER_NAME
+--------------------------------------------------------------------------------
+LEVEL_NAME
+--------------------------------------------------------------------------------
+ ORDER_NUM ORIGIN_CON_ID
+---------- -------------
+
+ADDRESS_HIER
+ID
+         2             1
+
+
+SQL> CREATE OR REPLACE ANALYTIC VIEW Order_Product_av
+  2  USING Order_Product
+  3  DIMENSION BY (Address_dim
+  4  KEY Address_id REFERENCES Address_id
+  5  HIERARCHIES (
+  6  Address_hier DEFAULT))
+  7  MEASURES
+  8  (Number_Product FACT Number_Product)
+  9  DEFAULT MEASURE NUMBER_PRODUCT;
+
+Analytic view created.
+
+SQL> SELECT *
+  2  FROM Order_Product_av HIERARCHIES (Address_hier)
+  3  ORDER BY Address_hier.hier_order;
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+ALL
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ALL].[ALL]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ALL              0          0          0
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           134
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+                      Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[Russia]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    COUNTRY          1          1          0 ALL
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ALL].[ALL]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            68
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           Kazan      Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+Kazan
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Kazan]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY             2          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[Russia]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            26
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         3 Kazan      Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+3
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[3]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID               3          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Kazan]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            26
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           Moscow     Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+Moscow
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Moscow]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY             4          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[Russia]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            31
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         1 Moscow     Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+1
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[1]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID               5          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Moscow]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            31
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           St Peter   Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+St Peter
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[St Peter]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY             6          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[Russia]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            11
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         2 St Peter   Russia
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+2
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[2]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID               7          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[St Peter]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            11
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+                      UK
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+UK
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[UK]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    COUNTRY          8          1          0 ALL
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ALL].[ALL]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            33
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           Cambridge  UK
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+Cambridge
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Cambridge]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY             9          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[UK]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            20
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         8 Cambridge  UK
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+8
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[8]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID              10          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Cambridge]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            20
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           London     UK
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+London
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[London]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY            11          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[UK]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            13
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         7 London     UK
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+7
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[7]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID              12          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[London]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            13
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+                      USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[USA]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    COUNTRY         13          1          0 ALL
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ALL].[ALL]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            33
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           LA         USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+LA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[LA]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY            14          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[USA]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            20
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         5 LA         USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+5
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[5]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID              15          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[LA]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+            20
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           New York   USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+New York
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[New York]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY            16          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[USA]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+             4
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         4 New York   USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+4
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[4]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID              17          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[New York]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+             4
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+           Washington USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+Washington
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Washington]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    CITY            18          2          0 COUNTRY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[COUNTRY].&[USA]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+             9
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+         6 Washington USA
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+6
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[ID].&[6]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+    ID              19          3          1 CITY
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+[CITY].&[Washington]
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+             9
+
+ADDRESS_ID CITY       COUNTR
+---------- ---------- ------
+MEMBER_NAME
+--------------------------------------------------------------------------------
+MEMBER_UNIQUE_NAME
+--------------------------------------------------------------------------------
+M M LEVEL_N HIER_ORDER      DEPTH    IS_LEAF PARENT_
+- - ------- ---------- ---------- ---------- -------
+PARENT_UNIQUE_NAME
+--------------------------------------------------------------------------------
+NUMBER_PRODUCT
+--------------
+
+
+20 rows selected.
+
+
+SQL> SELECT City, Number_Product
+  2  FROM Order_Product_av
+  3  WHERE Address_hier.level_name = 'CITY';
+
+CITY       NUMBER_PRODUCT
+---------- --------------
+Kazan                  26
+London                 13
+New York                4
+LA                     20
+Washington              9
+Moscow                 31
+St Peter               11
+Cambridge              20
+
+8 rows selected.
+
+SQL>
+
+
