@@ -1,0 +1,457 @@
+
+SQL> alter session set container = "app_con";
+
+Session altered.
+
+SQL> alter pluggable database application WEB_APP begin install '1.0';
+
+Pluggable database altered.
+
+SQL>  create user USR_WEB identified by 12345;
+
+User created.
+
+SQL> grant create session,dba, resource to USR_WEB;
+
+Grant succeeded.
+
+SQL> create table USR_WEB.Companies(
+  2  Id number(5,0) notnull,
+  3  Company nvarchar2(20) notnull,
+  4  email nvarchar2(50),
+  5  email nvarchar2(50),;
+Id number(5,0) notnull,
+               *
+ERROR at line 2:
+ORA-00907: missing right parenthesis
+
+
+SQL> create table USR_WEB.Companies sharing = extended data(
+  2  Id number(5,0) notnull,
+  3  Company nvarchar2(20) notnull,
+  4  email nvarchar2(50),
+  5  primary key (Id));
+Id number(5,0) notnull,
+               *
+ERROR at line 2:
+ORA-00907: missing right parenthesis
+
+
+SQL>  create table USR_WEB.Companies sharing = extended data(
+  2  Id NUMBER (5,0) NOT NULL,
+  3  Company NVARCHAR2 (20) NOT NULL,
+  4  email NVARCHAR2 (50),
+  5  primary key (Id));
+
+Table created.
+
+SQL> Insert into usr_web.companies values(1,'Apple','apple@gmail.com');
+
+1 row created.
+
+SQL> Insert into usr_web.companies values(2,'Windows','windows10@gmail.com');
+
+1 row created.
+
+SQL> alter pluggable database application WEB_APP end upgrade to '1.0';
+alter pluggable database application WEB_APP end upgrade to '1.0'
+*
+ERROR at line 1:
+ORA-65214: application action has not begun
+
+
+SQL> alter pluggable database application WEB_APP end upgrade to '1.0';
+alter pluggable database application WEB_APP end upgrade to '1.0'
+*
+ERROR at line 1:
+ORA-65214: application action has not begun
+
+
+SQL> alter pluggable database application WEB_APP begin install '1.0';
+alter pluggable database application WEB_APP begin install '1.0'
+*
+ERROR at line 1:
+ORA-65213: existing application action in progress
+
+
+SQL> alter pluggable database application WEB_APP end install '1.0';
+
+Pluggable database altered.
+
+SQL> COLUMN app_name FORMAT A20
+SQL> COLUMN app_version FORMAT A10
+SQL>
+SQL> SELECT app_name,
+  2         app_version,
+  3         app_status
+  4  FROM   dba_applications
+  5  WHERE  app_name = 'WEB_APP';
+
+APP_NAME             APP_VERSIO APP_STATUS
+-------------------- ---------- ------------
+WEB_APP              1.0        NORMAL
+
+SQL> alter session set container = app1;
+
+Session altered.
+
+SQL> alter pluggable database application WEB_APP sync;
+
+Pluggable database altered.
+
+SQL> insert into usr_web.companies values ( 1,'Samsung', 'samsung_korea@gmail.com' ) ;
+insert into usr_web.companies values ( 1,'Samsung', 'samsung_korea@gmail.com' )
+*
+ERROR at line 1:
+ORA-00001: unique constraint (USR_WEB.SYS_C008835) violated
+
+
+SQL> insert into usr_web.companies values ( 3,'Samsung', 'samsung_korea@gmail.com' ) ;
+
+1 row created.
+
+SQL> insert into usr_web.companies values ( 4,'Toyota', 'toyota_japan@gmail.com' ) ;
+
+1 row created.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter session set container = app2;
+
+Session altered.
+
+SQL> alter pluggable database application WEB_APP sync;
+
+Pluggable database altered.
+
+SQL> insert into usr_web.companies values (5,'Auchan','auchan_france@gmail.com');
+
+1 row created.
+
+SQL> insert into usr_web.companies values (6,'BMW','bmw_ger@gmail.com');
+
+1 row created.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter session set container = app_con;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (Companies) c;
+select con$name, c.* from containers (Companies) c
+                                      *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+
+
+SQL> format con$name a10
+SP2-0734: unknown command beginning "format con..." - rest of line ignored.
+SQL> column con$name format a10
+SQL> column company format a10
+SQL> column email format a20
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                    CON_ID
+---------- ---------- ---------- -------------------- ----------
+APP_CON             1 Apple      apple@gmail.com               4
+APP_CON             2 Windows    windows10@gmail.com           4
+APP2                1 Apple      apple@gmail.com               3
+APP2                2 Windows    windows10@gmail.com           3
+APP2                5 Auchan     auchan_france@gmail.          3
+                                 com
+
+APP2                6 BMW        bmw_ger@gmail.com             3
+
+6 rows selected.
+
+SQL>  column email format a30
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP_CON             1 Apple      apple@gmail.com                         4
+APP_CON             2 Windows    windows10@gmail.com                     4
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+6 rows selected.
+
+SQL> format con$name a10
+SP2-0734: unknown command beginning "format con..." - rest of line ignored.
+SQL> column con$name format a10
+SQL> column company format a10
+SQL> column email format a20
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                    CON_ID
+---------- ---------- ---------- -------------------- ----------
+APP_CON             1 Apple      apple@gmail.com               4
+APP_CON             2 Windows    windows10@gmail.com           4
+APP2                1 Apple      apple@gmail.com               3
+APP2                2 Windows    windows10@gmail.com           3
+APP2                5 Auchan     auchan_france@gmail.          3
+                                 com
+
+APP2                6 BMW        bmw_ger@gmail.com             3
+
+6 rows selected.
+
+SQL> alter session set container = app1;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP1                3 Samsung    samsung_korea@gmail.com                 5
+APP1                4 Toyota     toyota_japan@gmail.com                  5
+
+2 rows selected.
+
+SQL> update usr_web.Companies set email = 'apple_usa@gmail.com' where id =1;
+
+0 rows updated.
+
+SQL> update usr_web.Companies set email = 'apple_usa@gmail.com' where id =5;
+
+0 rows updated.
+
+SQL> alter session set container = app_con;
+
+Session altered.
+
+SQL> update usr_web.Companies set email = 'apple_usa@gmail.com' where id =1;
+update usr_web.Companies set email = 'apple_usa@gmail.com' where id =1
+               *
+ERROR at line 1:
+ORA-65023: active transaction exists in container APP1
+
+
+SQL> show con_name;
+
+CON_NAME
+------------------------------
+APP_CON
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP_CON             1 Apple      apple@gmail.com                         4
+APP_CON             2 Windows    windows10@gmail.com                     4
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+6 rows selected.
+
+SQL> alter session set container = app2;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+4 rows selected.
+
+SQL> update usr_web.Companies set email = 'apple_usa@gmail.com' where id =1;
+update usr_web.Companies set email = 'apple_usa@gmail.com' where id =1
+               *
+ERROR at line 1:
+ORA-65023: active transaction exists in container APP1
+
+
+SQL> update usr_web.Companies set email = 'win10@gmail.com' where id = 2;
+update usr_web.Companies set email = 'win10@gmail.com' where id = 2
+               *
+ERROR at line 1:
+ORA-65023: active transaction exists in container APP1
+
+
+SQL> alter session set container = app1;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP1                3 Samsung    samsung_korea@gmail.com                 5
+APP1                4 Toyota     toyota_japan@gmail.com                  5
+
+2 rows selected.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter pluggable database application web_app sync;
+
+Pluggable database altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP1                3 Samsung    samsung_korea@gmail.com                 5
+APP1                4 Toyota     toyota_japan@gmail.com                  5
+
+2 rows selected.
+
+SQL> insert into usr_web values(7,'LG','lg_jap@gmail.com');
+insert into usr_web values(7,'LG','lg_jap@gmail.com')
+            *
+ERROR at line 1:
+ORA-00942: table or view does not exist
+
+
+SQL> insert into usr_web.companies values(7,'LG','lg_jap@gmail.com');
+
+1 row created.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP1                3 Samsung    samsung_korea@gmail.com                 5
+APP1                4 Toyota     toyota_japan@gmail.com                  5
+APP1                7 LG         lg_jap@gmail.com                        5
+
+3 rows selected.
+
+SQL> alter session set container = app_con;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP_CON             1 Apple      apple@gmail.com                         4
+APP_CON             2 Windows    windows10@gmail.com                     4
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+6 rows selected.
+
+SQL> alter pluggable database application web_app sync;
+alter pluggable database application web_app sync
+*
+ERROR at line 1:
+ORA-65023: active transaction exists in container APP1
+
+
+SQL> alter session set container = app1;
+
+Session altered.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter session set container = app_con;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP_CON             1 Apple      apple@gmail.com                         4
+APP_CON             2 Windows    windows10@gmail.com                     4
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+6 rows selected.
+
+SQL> alter pluggable database application web_app sync;
+alter pluggable database application web_app sync
+*
+ERROR at line 1:
+ORA-65272: operation not allowed from outside an application PDB
+
+
+SQL> select con$name, c.* from usr_web.Companies c;
+select con$name, c.* from usr_web.Companies c
+       *
+ERROR at line 1:
+ORA-00904: "CON$NAME": invalid identifier
+
+
+SQL> select * from usr_web.Companies c;
+
+        ID COMPANY    EMAIL
+---------- ---------- ------------------------------
+         1 Apple      apple@gmail.com
+         2 Windows    windows10@gmail.com
+
+2 rows selected.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP_CON             1 Apple      apple@gmail.com                         4
+APP_CON             2 Windows    windows10@gmail.com                     4
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+6 rows selected.
+
+SQL> commit;
+
+Commit complete.
+
+SQL> alter session set container = app2;
+
+Session altered.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+4 rows selected.
+
+SQL> update usr_web.Companies set email = 'win10@gmail.com' where id =2;
+
+0 rows updated.
+
+SQL> select con$name, c.* from containers (usr_web.Companies) c;
+
+CON$NAME           ID COMPANY    EMAIL                              CON_ID
+---------- ---------- ---------- ------------------------------ ----------
+APP2                1 Apple      apple@gmail.com                         3
+APP2                2 Windows    windows10@gmail.com                     3
+APP2                5 Auchan     auchan_france@gmail.com                 3
+APP2                6 BMW        bmw_ger@gmail.com                       3
+
+4 rows selected.
+
+SQL> update usr_web.Companies set email = 'auchan_fra@gmail.com' where id =5;
+
+1 row updated.

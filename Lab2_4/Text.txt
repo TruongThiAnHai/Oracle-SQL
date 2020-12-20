@@ -1,0 +1,178 @@
+SQL> connect sys as sysdba
+Enter password:
+Connected.
+SQL> SHUTDOWN IMMEDIATE;
+Database closed.
+Database dismounted.
+ORACLE instance shut down.
+SQL> STARTUP MOUNT;
+ORACLE instance started.
+
+Total System Global Area 1275068200 bytes
+Fixed Size                  9027368 bytes
+Variable Size             452984832 bytes
+Database Buffers          805306368 bytes
+Redo Buffers                7749632 bytes
+Database mounted.
+SQL> COLUMN NAME FORMAT a45
+SQL> SELECT * FROM V$DBFILE;
+
+     FILE# NAME                                              CON_ID
+---------- --------------------------------------------- ----------
+         7 C:\ORACLE18CXE\ORADATA\XE\USERS01.DBF                  1
+         4 C:\ORACLE18CXE\ORADATA\XE\UNDOTBS01.DBF                1
+         1 C:\ORACLE18CXE\ORADATA\XE\SYSTEM01.DBF                 1
+         3 C:\ORACLE18CXE\ORADATA\XE\SYSAUX01.DBF                 1
+         5 C:\ORACLE18CXE\ORADATA\XE\PDBSEED\SYSTEM01.DB          2
+           F
+
+         6 C:\ORACLE18CXE\ORADATA\XE\PDBSEED\SYSAUX01.DB          2
+           F
+
+         8 C:\ORACLE18CXE\ORADATA\XE\PDBSEED\UNDOTBS01.D          2
+
+     FILE# NAME                                              CON_ID
+---------- --------------------------------------------- ----------
+           BF
+
+         9 C:\ORACLE18CXE\ORADATA\XE\XEPDB1\SYSTEM01.DBF          3
+        10 C:\ORACLE18CXE\ORADATA\XE\XEPDB1\SYSAUX01.DBF          3
+        11 C:\ORACLE18CXE\ORADATA\XE\XEPDB1\UNDOTBS01.DB          3
+           F
+
+        12 C:\ORACLE18CXE\ORADATA\XE\XEPDB1\USERS01.DBF           3
+
+11 rows selected.
+
+SQL> COLUMN NAME FORMAT a45
+SQL> SELECT * FROM V$DBFILE WHERE FILE# = 12;
+
+     FILE# NAME                                              CON_ID
+---------- --------------------------------------------- ----------
+        12 C:\ORACLE18CXE\ORADATA\XE\XEPDB1\USERS01.DBF           3
+
+SQL> HOST MOVE C:\ORACLE18CXE\ORADATA\XE\XEPDB1\USERS01.DBF C:\ORACLE18CXE\ORADATA\XE\XEPDB1\RENAME_USERS01.DBF
+        1 file(s) moved.
+
+SQL> ALTER DATABASE RENAME FILE
+  2  'C:\ORACLE18CXE\ORADATA\XE\XEPDB1\USERS01.DBF'
+  3  TO
+  4  'C:\ORACLE18CXE\ORADATA\XE\XEPDB1\RENAME_USERS01.DBF';
+
+Database altered.
+
+SQL> SELECT * FROM V$DBFILE WHERE FILE# = 12;
+
+     FILE# NAME                                                   CON_ID
+---------- -------------------------------------------------- ----------
+        12 C:\ORACLE18CXE\ORADATA\XE\XEPDB1\RENAME_USERS01.DB          3
+           F
+
+SQL> connect student
+ERROR:
+ORA-01033: ORACLE initialization or shutdown in progress 
+Process ID: 0 
+Session ID: 0 Serial number: 0 
+
+
+SQL> STARTUP
+SP2-0640: Not connected
+SQL> ALTER DATABASE OPEN;
+SP2-0640: Not connected
+SQL> select instance_name, status from v$instance;
+SP2-0640: Not connected
+SQL> connect sys as sysdba
+Connected.
+SQL> ALTER DATABASE OPEN;
+
+Database altered.
+
+SQL> connect student
+Connected.
+SQL> connect sys as sysdba
+Connected.
+SQL> ALTER SYSTEM SUSPEND;
+
+System altered.
+
+SQL> select ACTIVE_STATE from V$INSTANCE
+  2  ;
+
+ACTIVE_ST
+---------
+NORMAL
+
+SQL> select
+  2     database_status
+  3  from
+  4     v$instance;
+
+DATABASE_STATUS
+-----------------
+SUSPENDED
+
+SQL> SELECT DATABASE_STATUS FROM V$INSTANCE;
+
+DATABASE_STATUS
+-----------------
+SUSPENDED
+
+SQL> alter system resume;
+
+System altered.
+
+SQL> connect system
+Enter password:
+Connected.
+SQL> ALTER SYSTEM QUIESCE DATABASE;
+ALTER SYSTEM QUIESCE DATABASE
+                     *
+ERROR at line 1:
+ORA-00905: missing keyword
+
+
+SQL> select active_state from v$instance;
+
+ACTIVE_ST
+---------
+NORMAL
+
+SQL> ALTER SYSTEM QUIESCE RESTRICTED;
+ALTER SYSTEM QUIESCE RESTRICTED
+*
+ERROR at line 1:
+ORA-25510: quiesce not supported for the root container
+
+
+SQL> alter system enable restricted session
+  2  ;
+
+System altered.
+
+SQL> alter system quiesce restricted;
+alter system quiesce restricted
+*
+ERROR at line 1:
+ORA-25510: quiesce not supported for the root container
+
+SQL> select database_status from V$INSTANCE;
+
+DATABASE_STATUS
+-----------------
+SUSPENDED
+
+SQL> alter system suspend;
+
+System altered.
+
+SQL> select database_status from V$INSTANCE;
+
+DATABASE_STATUS
+-----------------
+SUSPENDED
+
+SQL> connect student
+Enter password:
+Connected.
+SQL> select * from products;
+

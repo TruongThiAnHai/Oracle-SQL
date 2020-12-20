@@ -1,0 +1,1092 @@
+SQL> Rem
+SQL> Rem $Header: rdbms/admin/pdb_to_apppdb.sql /main/6 2017/08/21 09:38:56 pjulsaks Exp $
+SQL> Rem
+SQL> Rem pdb_to_apppdb.sql
+SQL> Rem
+SQL> Rem Copyright (c) 2015, 2017, Oracle and/or its affiliates.
+SQL> Rem All rights reserved.
+SQL> Rem
+SQL> Rem    NAME
+SQL> Rem      pdb_to_apppdb.sql - PDB to Federation PDB
+SQL> Rem
+SQL> Rem    DESCRIPTION
+SQL> Rem      Converts PDB (standalone or Application ROOT) to Application PDB
+SQL> Rem
+SQL> Rem    NOTES
+SQL> Rem
+SQL> Rem    BEGIN SQL_FILE_METADATA
+SQL> Rem    SQL_SOURCE_FILE: rdbms/admin/pdb_to_apppdb.sql
+SQL> Rem    SQL_SHIPPED_FILE: rdbms/admin/pdb_to_apppdb.sql
+SQL> Rem    SQL_PHASE: PDB_TO_APPPDB
+SQL> Rem    SQL_STARTUP_MODE: NORMAL
+SQL> Rem    SQL_IGNORABLE_ERRORS: NONE
+SQL> Rem    SQL_CALLING_FILE: NONE
+SQL> Rem    END SQL_FILE_METADATA
+SQL> Rem
+SQL> Rem    MODIFIED   (MM/DD/YY)
+SQL> Rem    pjulsaks    08/21/17 - Bug 26590200: update fed$app$status for
+SQL> Rem                           root-cloned pdb
+SQL> Rem    thbaby      04/22/17 - Bug 25940936: set _enable_view_pdb
+SQL> Rem    pjulsaks    08/17/16 - XbranchMerge pjulsaks_lrg-19700592 from
+SQL> Rem                           st_rdbms_12.2.0.1.0
+SQL> Rem    pjulsaks    08/12/16 - RTI 19700592: remove code that modified
+SQL> Rem                           fed$app$status, pdb_sync$, etc. (undo fixes for
+SQL> Rem                           bugs 23213558, 21930902, 21652856)
+SQL> Rem    pjulsaks    05/10/16 - Bug 23213558: add application all sync and
+SQL> Rem                           rearrange the code
+SQL> Rem    thbaby      01/16/16 - Bug 22550952: disallow script in PDB$SEED
+SQL> Rem    pyam        12/18/15 - renamed from pdb_to_fedpdb.sql
+SQL> Rem                           (below comments copied from old file)
+SQL> Rem    pyam        12/13/15 - LRG 18533922: pass argument to loc_to_common3.sql
+SQL> Rem    pyam        11/25/15 - fed$statements -> pdb_sync$
+SQL> Rem    pyam        11/22/15 - 21911641: remove fed$sessions
+SQL> Rem    thbaby      11/03/15 - Bug 21930902: set status in fed$app$status
+SQL> Rem    juilin      09/01/15 - 21458522: rename syscontext FEDERATION_NAME
+SQL> Rem    thbaby      08/19/15 - 21652856: remove insert into fed$app$status
+SQL> Rem    surman      01/08/15 - 19475031: Update SQL metadata
+SQL> Rem    pyam        09/09/14 - Proj 47234: script to run in PDB to convert into
+SQL> Rem                           a Federation PDB
+SQL> Rem    pyam        09/09/14 - Created
+SQL> Rem
+SQL> SET ECHO ON
+SQL> SET FEEDBACK 1
+SQL> SET NUMWIDTH 10
+SQL> SET LINESIZE 80
+SQL> SET TRIMSPOOL ON
+SQL> SET TAB OFF
+SQL> SET PAGESIZE 100
+SQL>
+SQL> WHENEVER SQLERROR EXIT;
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL>
+SQL> VARIABLE cdbname VARCHAR2(128)
+SQL> VARIABLE pdbname VARCHAR2(128)
+SQL> VARIABLE appname VARCHAR2(128)
+SQL> BEGIN
+  2    -- Disallow script in non-CDB
+  3    SELECT sys_context('USERENV', 'CDB_NAME')
+  4      INTO :cdbname
+  5      FROM dual
+  6      WHERE sys_context('USERENV', 'CDB_NAME') is not null;
+  7    -- Disallow script in CDB Root
+  8    -- Disallow script in PDB$SEED (Bug 22550952)
+  9    SELECT sys_context('USERENV', 'CON_NAME')
+ 10      INTO :pdbname
+ 11      FROM dual
+ 12      WHERE sys_context('USERENV', 'CON_NAME') <> 'CDB$ROOT'
+ 13      AND   sys_context('USERENV', 'CON_NAME') <> 'PDB$SEED';
+ 14    -- Disallow script outside of Application Container
+ 15    SELECT sys_context('USERENV', 'APPLICATION_NAME')
+ 16      INTO :appname
+ 17      FROM dual
+ 18      WHERE sys_context('USERENV', 'APPLICATION_NAME') is not null;
+ 19  END;
+ 20  /
+
+PL/SQL procedure successfully completed.
+
+SQL>
+SQL> -- this script should only be run in an application PDB
+SQL> select TO_NUMBER('NOT_IN_APPLICATION_PDB') from v$pdbs
+  2    where con_id=sys_context('USERENV', 'CON_ID') and application_pdb<>'YES';
+
+no rows selected
+
+SQL>
+SQL> @@?/rdbms/admin/loc_to_common0.sql
+SQL> Rem
+SQL> Rem $Header: rdbms/admin/loc_to_common0.sql /main/5 2017/04/25 08:09:06 thbaby Exp $
+SQL> Rem
+SQL> Rem loc_to_common0.sql
+SQL> Rem
+SQL> Rem Copyright (c) 2015, 2017, Oracle and/or its affiliates.
+SQL> Rem All rights reserved.
+SQL> Rem
+SQL> Rem    NAME
+SQL> Rem      loc_to_common0.sql - <one-line expansion of the name>
+SQL> Rem
+SQL> Rem    DESCRIPTION
+SQL> Rem      <short description of component this file declares/defines>
+SQL> Rem
+SQL> Rem    NOTES
+SQL> Rem      <other useful comments, qualifications, etc.>
+SQL> Rem
+SQL> Rem    BEGIN SQL_FILE_METADATA
+SQL> Rem    SQL_SOURCE_FILE: rdbms/admin/loc_to_common0.sql
+SQL> Rem    SQL_SHIPPED_FILE: rdbms/admin/loc_to_common0.sql
+SQL> Rem    SQL_PHASE: LOC_TO_COMMON0
+SQL> Rem    SQL_STARTUP_MODE: NORMAL
+SQL> Rem    SQL_IGNORABLE_ERRORS: NONE
+SQL> Rem    SQL_CALLING_FILE:
+SQL> Rem    END SQL_FILE_METADATA
+SQL> Rem
+SQL> Rem    MODIFIED   (MM/DD/YY)
+SQL> Rem    thbaby      04/21/17 - Bug 25940936: set _enable_view_pdb
+SQL> Rem    sankejai    01/22/16 - 16076261: session parameters scoped to container
+SQL> Rem    pyam        12/22/15 - 21927236: rename pdb_to_fedpdb to pdb_to_apppdb
+SQL> Rem    pyam        09/22/15 - 20959267: check for version mismatch
+SQL> Rem    pyam        07/15/15 - Created
+SQL> Rem
+SQL>
+SQL> SET ECHO ON
+SQL> SET FEEDBACK 1
+SQL> SET NUMWIDTH 10
+SQL> SET LINESIZE 80
+SQL> SET TRIMSPOOL ON
+SQL> SET TAB OFF
+SQL> SET PAGESIZE 100
+SQL>
+SQL> COLUMN pdbname NEW_VALUE pdbname
+SQL> COLUMN pdbid NEW_VALUE pdbid
+SQL>
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL> select :pdbname pdbname from dual;
+
+PDBNAME
+--------------------------------------------------------------------------------
+APP1
+
+1 row selected.
+
+SQL>
+SQL> select TO_CHAR(con_id) pdbid from v$pdbs where name='&pdbname';
+old   1: select TO_CHAR(con_id) pdbid from v$pdbs where name='&pdbname'
+new   1: select TO_CHAR(con_id) pdbid from v$pdbs where name='APP1'
+
+PDBID
+----------------------------------------
+5
+
+1 row selected.
+
+SQL>
+SQL> -- save pluggable database open mode
+SQL> COLUMN open_state_col NEW_VALUE open_sql;
+SQL> COLUMN restricted_col NEW_VALUE restricted_state;
+SQL> SELECT decode(open_mode,
+  2                'READ ONLY', 'ALTER PLUGGABLE DATABASE &pdbname OPEN READ ONLY',
+  3                'READ WRITE', 'ALTER PLUGGABLE DATABASE &pdbname OPEN',
+  4                'MIGRATE', 'ALTER PLUGGABLE DATABASE &pdbname OPEN UPGRADE', '')
+  5           open_state_col,
+  6         decode(restricted, 'YES', 'RESTRICTED', '')
+  7           restricted_col
+  8         from v$pdbs where name='&pdbname';
+old   2:               'READ ONLY', 'ALTER PLUGGABLE DATABASE &pdbname OPEN READ ONLY',
+new   2:               'READ ONLY', 'ALTER PLUGGABLE DATABASE APP1 OPEN READ ONLY',
+old   3:               'READ WRITE', 'ALTER PLUGGABLE DATABASE &pdbname OPEN',
+new   3:               'READ WRITE', 'ALTER PLUGGABLE DATABASE APP1 OPEN',
+old   4:               'MIGRATE', 'ALTER PLUGGABLE DATABASE &pdbname OPEN UPGRADE', '')
+new   4:               'MIGRATE', 'ALTER PLUGGABLE DATABASE APP1 OPEN UPGRADE', '')
+old   8:        from v$pdbs where name='&pdbname'
+new   8:        from v$pdbs where name='APP1'
+
+OPEN_STATE_COL                               RESTRICTED
+-------------------------------------------- ----------
+ALTER PLUGGABLE DATABASE APP1 OPEN UPGRADE   RESTRICTED
+
+1 row selected.
+
+SQL>
+SQL> alter session set container=CDB$ROOT;
+
+Session altered.
+
+SQL>
+SQL> -- if pdb was already closed, don't exit on error
+SQL> WHENEVER SQLERROR CONTINUE;
+SQL> alter pluggable database "&pdbname" close immediate instances=all;
+old   1: alter pluggable database "&pdbname" close immediate instances=all
+new   1: alter pluggable database "APP1" close immediate instances=all
+
+Pluggable database altered.
+
+SQL> WHENEVER SQLERROR EXIT;
+SQL>
+SQL> alter pluggable database "&pdbname" open upgrade;
+old   1: alter pluggable database "&pdbname" open upgrade
+new   1: alter pluggable database "APP1" open upgrade
+
+Pluggable database altered.
+
+SQL>
+SQL> -- check that PDB and CDB versions match
+SQL> SELECT TO_NUMBER('VERSION MISMATCH') from sys.dual
+  2   WHERE (select count(*) from pdb_alert$ where name='&pdbname' and cause#=65
+  3                                            and status=1) > 0;
+old   2:  WHERE (select count(*) from pdb_alert$ where name='&pdbname' and cause#=65
+new   2:  WHERE (select count(*) from pdb_alert$ where name='APP1' and cause#=65
+
+no rows selected
+
+SQL>
+SQL> alter session set container = "&pdbname";
+old   1: alter session set container = "&pdbname"
+new   1: alter session set container = "APP1"
+
+Session altered.
+
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL>
+SQL> -- initial setup before beginning the script
+SQL> -- Bug 16076261: nls_length_semantics is not a parameter, so the value is not
+SQL> -- lost after set container in further scripts.
+SQL> alter session set NLS_LENGTH_SEMANTICS=BYTE;
+
+Session altered.
+
+SQL>
+SQL> @@?/rdbms/admin/loc_to_common1.sql 5
+SQL> Rem
+SQL> Rem $Header: rdbms/admin/loc_to_common1.sql /main/15 2017/04/25 08:09:06 thbaby Exp $
+SQL> Rem
+SQL> Rem loc_to_common1.sql
+SQL> Rem
+SQL> Rem Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+SQL> Rem All rights reserved.
+SQL> Rem
+SQL> Rem    NAME
+SQL> Rem      loc_to_common1.sql - helper script for converting local to common
+SQL> Rem
+SQL> Rem    DESCRIPTION
+SQL> Rem      Does the first set of operations needed to convert local to common.
+SQL> Rem      Creates object-linked views.
+SQL> Rem
+SQL> Rem    NOTES
+SQL> Rem      Called by noncdb_to_pdb.sql, apex_to_common.sql, pdb_to_apppdb.sql
+SQL> Rem
+SQL> Rem    BEGIN SQL_FILE_METADATA
+SQL> Rem    SQL_SOURCE_FILE: rdbms/admin/loc_to_common1.sql
+SQL> Rem    SQL_SHIPPED_FILE: rdbms/admin/loc_to_common1.sql
+SQL> Rem    SQL_PHASE: LOC_TO_COMMON1
+SQL> Rem    SQL_STARTUP_MODE: NORMAL
+SQL> Rem    SQL_IGNORABLE_ERRORS: NONE
+SQL> Rem    SQL_CALLING_FILE: rdbms/admin/noncdb_to_pdb.sql
+SQL> Rem    END SQL_FILE_METADATA
+SQL> Rem
+SQL> Rem    MODIFIED   (MM/DD/YY)
+SQL> Rem    thbaby      04/21/17 - Bug 25940936: set _enable_view_pdb
+SQL> Rem    pyam        01/05/17 - set/clear scriptparam separately per container
+SQL> Rem    pyam        09/08/16 - RTI 19633354: remove duplicate set &scriptparam
+SQL> Rem    akruglik    01/25/16 - (22132084): handle Extended Data links
+SQL> Rem    sankejai    01/22/16 - 16076261: session parameters scoped to container
+SQL> Rem    pyam        12/22/15 - 21927236: rename pdb_to_fedpdb to pdb_to_apppdb
+SQL> Rem    akruglik    11/24/15 - (21193922) App Common users are marked with both
+SQL> Rem                           common and App-common bits
+SQL> Rem    thbaby      09/02/15 - Bug 21774247: handle COMMON_DATA
+SQL> Rem    juilin      09/01/15 - 21458522: rename syscontext FEDERATION_NAME
+SQL> Rem    pyam        04/30/15 - 20989123: fix fed flags for user$
+SQL> Rem    pyam        04/19/15 - 20795461: change to _application_script for
+SQL> Rem                           pdb_to_apppdb
+SQL> Rem    syetchin    04/06/15 - Fix for diffs in lrgdbconc0e3ee and
+SQL> Rem                           lrgdbconc0e4ee by mjungerm
+SQL> Rem    surman      01/08/15 - 19475031: Update SQL metadata
+SQL> Rem    pyam        09/16/14 - Helper script #1 for converting local objects to
+SQL> Rem                           common in a CDB environment.
+SQL> Rem    pyam        09/16/14 - Created
+SQL> Rem
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL> exec dbms_pdb.noncdb_to_pdb(&&1);
+
+PL/SQL procedure successfully completed.
+
+SQL>
+SQL> COLUMN rootcon NEW_VALUE rootcon
+SQL> select decode(&&1, 5, SYS_CONTEXT('USERENV', 'APPLICATION_NAME'), 'CDB$ROOT')
+  2         rootcon from dual;
+old   1: select decode(&&1, 5, SYS_CONTEXT('USERENV', 'APPLICATION_NAME'), 'CDB$ROOT')
+new   1: select decode(5, 5, SYS_CONTEXT('USERENV', 'APPLICATION_NAME'), 'CDB$ROOT')
+
+ROOTCON
+--------------------------------------------------------------------------------
+APP_CON
+
+1 row selected.
+
+SQL>
+SQL> COLUMN scriptparam NEW_VALUE scriptparam
+SQL> select decode(&&1, 5, '"_APPLICATION_SCRIPT"', '"_ORACLE_SCRIPT"') scriptparam
+  2    from dual;
+old   1: select decode(&&1, 5, '"_APPLICATION_SCRIPT"', '"_ORACLE_SCRIPT"') scriptparam
+new   1: select decode(5, 5, '"_APPLICATION_SCRIPT"', '"_ORACLE_SCRIPT"') scriptparam
+
+SCRIPTPARAM
+---------------------
+"_APPLICATION_SCRIPT"
+
+1 row selected.
+
+SQL>
+SQL> alter session set container=&rootcon;
+old   1: alter session set container=&rootcon
+new   1: alter session set container=APP_CON
+
+Session altered.
+
+SQL>
+SQL> alter session set &scriptparam=true;
+old   1: alter session set &scriptparam=true
+new   1: alter session set "_APPLICATION_SCRIPT"=true
+
+Session altered.
+
+SQL>
+SQL> -- CDB Common Users/Roles have 128 (Common) set in user$.spare1 while App
+SQL> -- Common Users/Roles have both 128 (Common) and 4096 (App Common) set.
+SQL> -- If we are looking for App Common Users/Roles, CDB Common users/Roles get
+SQL> -- skipped because we check whether user$.spare1 has both 128 and 4096 set,
+SQL> -- but if we are interested in CDB Common Users/Roles, we need to restrict
+SQL> -- ourselves to USER$ rows which have 128 but not 4096 set in spare1
+SQL> COLUMN cmnusrflag NEW_VALUE cmnusrflag
+SQL> select decode(&&1, 5, '4224', '128') cmnusrflag from dual;
+old   1: select decode(&&1, 5, '4224', '128') cmnusrflag from dual
+new   1: select decode(5, 5, '4224', '128') cmnusrflag from dual
+
+CMNU
+----
+4224
+
+1 row selected.
+
+SQL>
+SQL> -- if this is for federation conversion, only treat federation objects
+SQL> -- as common
+SQL> COLUMN fedobjflag NEW_VALUE fedobjflag
+SQL> select decode(&&1, 5, '134217728', '0') fedobjflag from dual;
+old   1: select decode(&&1, 5, '134217728', '0') fedobjflag from dual
+new   1: select decode(5, 5, '134217728', '0') fedobjflag from dual
+
+FEDOBJFLA
+---------
+134217728
+
+1 row selected.
+
+SQL>
+SQL> -- create temporary object-linked view to get list of objects marked as common
+SQL> -- in CDB$ROOT
+SQL> --
+SQL> -- NOTE: SHARING bits in OBJ$.FLAGS are:
+SQL> -- - 65536  = MDL (Metadata Link)
+SQL> -- - 131072 = DL (Data Link, formerly OBL)
+SQL> -- - 4294967296 = EDL (Extended Data Link)
+SQL> define mdl=65536
+SQL> define dl=131072
+SQL> define edl=4294967296
+SQL> define sharing_bits=(&mdl+&dl+&edl)
+SQL>
+SQL> create or replace view sys.cdb$common_root_objects&pdbid sharing=object as
+  2  select u.name owner, o.name object_name, o.type# object_type, o.namespace nsp,
+  3         o.subname object_subname, o.signature object_sig,
+  4         decode(bitand(o.flags, &sharing_bits),
+  5                &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+  6    from sys.obj$ o, sys.user$ u
+  7   where o.owner#=u.user# and bitand(o.flags, &sharing_bits) <> 0
+  8     and bitand(o.flags,&fedobjflag)=&fedobjflag;
+old   1: create or replace view sys.cdb$common_root_objects&pdbid sharing=object as
+new   1: create or replace view sys.cdb$common_root_objects5 sharing=object as
+old   4:        decode(bitand(o.flags, &sharing_bits),
+new   4:        decode(bitand(o.flags, (65536+131072+4294967296)),
+old   5:               &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+new   5:               4294967296+65536, 'EDL', 131072, 'DL', 'MDL') sharing
+old   7:  where o.owner#=u.user# and bitand(o.flags, &sharing_bits) <> 0
+new   7:  where o.owner#=u.user# and bitand(o.flags, (65536+131072+4294967296)) <> 0
+old   8:    and bitand(o.flags,&fedobjflag)=&fedobjflag
+new   8:    and bitand(o.flags,134217728)=134217728
+
+View created.
+
+SQL>
+SQL> -- Bug 21774247: Handle COMMON_DATA tables.
+SQL> -- create temporary object-linked view to get list of tables marked as
+SQL> -- common_data in Root
+SQL> create or replace view sys.cdb$cdata_root_tables&pdbid sharing=object as
+  2  select u.name owner, o.name object_name
+  3    from sys.obj$ o, sys.user$ u, sys.tab$ t
+  4   where o.owner#=u.user# and o.obj#=t.obj#
+  5     and bitand(t.property, power(2,52))=power(2,52);
+old   1: create or replace view sys.cdb$cdata_root_tables&pdbid sharing=object as
+new   1: create or replace view sys.cdb$cdata_root_tables5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- Bug 21774247: Handle COMMON_DATA views.
+SQL> -- create temporary object-linked view to get list of views marked as
+SQL> -- common_data in Root
+SQL> create or replace view sys.cdb$cdata_root_views&pdbid sharing=object as
+  2  select u.name owner, o.name object_name
+  3    from sys.obj$ o, sys.user$ u, sys.view$ v
+  4   where o.owner#=u.user# and o.obj#=v.obj#
+  5     and bitand(v.property, power(2,52))=power(2,52);
+old   1: create or replace view sys.cdb$cdata_root_views&pdbid sharing=object as
+new   1: create or replace view sys.cdb$cdata_root_views5 sharing=object as
+
+View created.
+
+SQL>
+SQL> create or replace view sys.cdb$cmn_root_types&pdbid sharing=object as
+  2  select u.name owner, o.name object_name, o.type# object_type, o.namespace nsp,
+  3         o.subname object_subname, o.signature object_sig, t.hashcode hashcode,
+  4         decode(bitand(o.flags, &sharing_bits),
+  5                &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+  6    from sys.obj$ o, sys.user$ u, sys.type$ t where
+  7    o.type#=13 and o.oid$=t.tvoid and o.owner#=u.user# and
+  8    bitand(o.flags, &sharing_bits) <> 0 and
+  9    bitand(o.flags,&fedobjflag)=&fedobjflag;
+old   1: create or replace view sys.cdb$cmn_root_types&pdbid sharing=object as
+new   1: create or replace view sys.cdb$cmn_root_types5 sharing=object as
+old   4:        decode(bitand(o.flags, &sharing_bits),
+new   4:        decode(bitand(o.flags, (65536+131072+4294967296)),
+old   5:               &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+new   5:               4294967296+65536, 'EDL', 131072, 'DL', 'MDL') sharing
+old   8:   bitand(o.flags, &sharing_bits) <> 0 and
+new   8:   bitand(o.flags, (65536+131072+4294967296)) <> 0 and
+old   9:   bitand(o.flags,&fedobjflag)=&fedobjflag
+new   9:   bitand(o.flags,134217728)=134217728
+
+View created.
+
+SQL>
+SQL> -- object-linked view for list of common users
+SQL> create or replace view sys.cdb$common_users&pdbid sharing=object as
+  2  select name, type# from sys.user$
+  3  where bitand(spare1,4224) = &cmnusrflag;
+old   1: create or replace view sys.cdb$common_users&pdbid sharing=object as
+new   1: create or replace view sys.cdb$common_users5 sharing=object as
+old   3: where bitand(spare1,4224) = &cmnusrflag
+new   3: where bitand(spare1,4224) = 4224
+
+View created.
+
+SQL>
+SQL> -- object-linked view for accessing dependency$
+SQL> create or replace view sys.cdb$rootdeps&pdbid sharing=object as select du.name as owner, do.name as name, do.type# as d_type#, do.namespace as d_namespace,pu.name as referenced_owner, po.name as referenced_name, po.type# as p_type#, po.namespace as p_namespace,d.order#,d.property,d.d_attrs,d.d_reason from sys.obj$ do, sys.obj$ po, sys.user$ du, sys.user$ pu, sys.dependency$ d where du.user#=do.owner# and pu.user#=po.owner# and do.obj#=d_obj# and po.obj#=p_obj#;
+old   1: create or replace view sys.cdb$rootdeps&pdbid sharing=object as select du.name as owner, do.name as name, do.type# as d_type#, do.namespace as d_namespace,pu.name as referenced_owner, po.name as referenced_name, po.type# as p_type#, po.namespace as p_namespace,d.order#,d.property,d.d_attrs,d.d_reason from sys.obj$ do, sys.obj$ po, sys.user$ du, sys.user$ pu, sys.dependency$ d where du.user#=do.owner# and pu.user#=po.owner# and do.obj#=d_obj# and po.obj#=p_obj#
+new   1: create or replace view sys.cdb$rootdeps5 sharing=object as select du.name as owner, do.name as name, do.type# as d_type#, do.namespace as d_namespace,pu.name as referenced_owner, po.name as referenced_name, po.type# as p_type#, po.namespace as p_namespace,d.order#,d.property,d.d_attrs,d.d_reason from sys.obj$ do, sys.obj$ po, sys.user$ du, sys.user$ pu, sys.dependency$ d where du.user#=do.owner# and pu.user#=po.owner# and do.obj#=d_obj# and po.obj#=p_obj#
+
+View created.
+
+SQL>
+SQL> -- TODO: update to include fed flags
+SQL> -- object-linked view for accessing sysauth$: common system privileges
+SQL> create or replace view sys.cdb$commonsysprivs&pdbid sharing=object as
+  2  select u.name, s.privilege# from sys.user$ u, sys.sysauth$ s
+  3  where s.grantee#=u.user# and bitand(s.option$,8)=8 and s.privilege#<0;
+old   1: create or replace view sys.cdb$commonsysprivs&pdbid sharing=object as
+new   1: create or replace view sys.cdb$commonsysprivs5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- TODO: update to include fed flags
+SQL> -- object-linked view for accessing sysauth$: common role grants
+SQL> create or replace view sys.cdb$commonrolegrants&pdbid sharing=object as
+  2  select u.name, r.name rolename from sys.user$ u, sys.sysauth$ s, sys.user$ r
+  3  where s.grantee#=u.user# and bitand(s.option$,8)=8 and s.privilege#>0 and
+  4  s.privilege#=r.user#;
+old   1: create or replace view sys.cdb$commonrolegrants&pdbid sharing=object as
+new   1: create or replace view sys.cdb$commonrolegrants5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- TODO: update to include fed flags
+SQL> -- object-linked view for accessing objauth$
+SQL> create or replace view sys.cdb$commonobjprivs&pdbid sharing=object as
+  2  select u.name, oa.privilege#, u2.name owner, o.name objname, oa.col#
+  3  from sys.user$ u, sys.objauth$ oa, sys.obj$ o, sys.user$ u2
+  4  where oa.grantee#=u.user# and bitand(oa.option$,8)=8
+  5  and oa.obj#=o.obj# and o.owner#=u2.user#;
+old   1: create or replace view sys.cdb$commonobjprivs&pdbid sharing=object as
+new   1: create or replace view sys.cdb$commonobjprivs5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- do java long identifier translation in the root if need be
+SQL> declare junk varchar2(100);
+  2  begin
+  3  junk := dbms_java_test.funcall('-lid_translate_all', ' ');
+  4  exception when others then null;
+  5  end;
+  6  /
+
+PL/SQL procedure successfully completed.
+
+SQL> alter session set &scriptparam=false;
+old   1: alter session set &scriptparam=false
+new   1: alter session set "_APPLICATION_SCRIPT"=false
+
+Session altered.
+
+SQL>
+SQL> -- switch into PDB
+SQL> alter session set container="&pdbname";
+old   1: alter session set container="&pdbname"
+new   1: alter session set container="APP1"
+
+Session altered.
+
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL> alter session set &scriptparam=true;
+old   1: alter session set &scriptparam=true
+new   1: alter session set "_APPLICATION_SCRIPT"=true
+
+Session altered.
+
+SQL> create or replace view sys.cdb$common_root_objects&pdbid sharing=object as
+  2  select u.name owner, o.name object_name, o.type# object_type, o.namespace nsp,
+  3         o.subname object_subname, o.signature object_sig,
+  4         decode(bitand(o.flags, &sharing_bits),
+  5                &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+  6    from sys.obj$ o, sys.user$ u
+  7   where o.owner#=u.user# and bitand(o.flags, &sharing_bits) <> 0
+  8     and bitand(o.flags,&fedobjflag)=&fedobjflag;
+old   1: create or replace view sys.cdb$common_root_objects&pdbid sharing=object as
+new   1: create or replace view sys.cdb$common_root_objects5 sharing=object as
+old   4:        decode(bitand(o.flags, &sharing_bits),
+new   4:        decode(bitand(o.flags, (65536+131072+4294967296)),
+old   5:               &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+new   5:               4294967296+65536, 'EDL', 131072, 'DL', 'MDL') sharing
+old   7:  where o.owner#=u.user# and bitand(o.flags, &sharing_bits) <> 0
+new   7:  where o.owner#=u.user# and bitand(o.flags, (65536+131072+4294967296)) <> 0
+old   8:    and bitand(o.flags,&fedobjflag)=&fedobjflag
+new   8:    and bitand(o.flags,134217728)=134217728
+
+View created.
+
+SQL>
+SQL> -- Bug 21774247: Handle COMMON_DATA tables.
+SQL> -- create temporary object-linked view to get list of tables marked as
+SQL> -- common_data in Root
+SQL> create or replace view sys.cdb$cdata_root_tables&pdbid sharing=object as
+  2  select u.name owner, o.name object_name
+  3    from sys.obj$ o, sys.user$ u, sys.tab$ t
+  4   where o.owner#=u.user# and o.obj#=t.obj#
+  5     and bitand(t.property, power(2,52))=power(2,52);
+old   1: create or replace view sys.cdb$cdata_root_tables&pdbid sharing=object as
+new   1: create or replace view sys.cdb$cdata_root_tables5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- Bug 21774247: Handle COMMON_DATA views.
+SQL> -- create temporary object-linked view to get list of views marked as
+SQL> -- common_data in Root
+SQL> create or replace view sys.cdb$cdata_root_views&pdbid sharing=object as
+  2  select u.name owner, o.name object_name
+  3    from sys.obj$ o, sys.user$ u, sys.view$ v
+  4   where o.owner#=u.user# and o.obj#=v.obj#
+  5     and bitand(v.property, power(2,52))=power(2,52);
+old   1: create or replace view sys.cdb$cdata_root_views&pdbid sharing=object as
+new   1: create or replace view sys.cdb$cdata_root_views5 sharing=object as
+
+View created.
+
+SQL>
+SQL> create or replace view sys.cdb$cmn_root_types&pdbid sharing=object as
+  2  select u.name owner, o.name object_name, o.type# object_type, o.namespace nsp,
+  3         o.subname object_subname, o.signature object_sig, t.hashcode hashcode,
+  4         decode(bitand(o.flags, &sharing_bits),
+  5                &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+  6    from sys.obj$ o, sys.user$ u, sys.type$ t where
+  7    o.type#=13 and o.oid$=t.tvoid and o.owner#=u.user# and
+  8    bitand(o.flags, &sharing_bits) <> 0 and
+  9    bitand(o.flags,&fedobjflag)=&fedobjflag;
+old   1: create or replace view sys.cdb$cmn_root_types&pdbid sharing=object as
+new   1: create or replace view sys.cdb$cmn_root_types5 sharing=object as
+old   4:        decode(bitand(o.flags, &sharing_bits),
+new   4:        decode(bitand(o.flags, (65536+131072+4294967296)),
+old   5:               &edl+&mdl, 'EDL', &dl, 'DL', 'MDL') sharing
+new   5:               4294967296+65536, 'EDL', 131072, 'DL', 'MDL') sharing
+old   8:   bitand(o.flags, &sharing_bits) <> 0 and
+new   8:   bitand(o.flags, (65536+131072+4294967296)) <> 0 and
+old   9:   bitand(o.flags,&fedobjflag)=&fedobjflag
+new   9:   bitand(o.flags,134217728)=134217728
+
+View created.
+
+SQL>
+SQL> -- object-linked view for list of common users
+SQL> create or replace view sys.cdb$common_users&pdbid sharing=object as
+  2  select name, type# from sys.user$
+  3  where bitand(spare1,4224) = &cmnusrflag;
+old   1: create or replace view sys.cdb$common_users&pdbid sharing=object as
+new   1: create or replace view sys.cdb$common_users5 sharing=object as
+old   3: where bitand(spare1,4224) = &cmnusrflag
+new   3: where bitand(spare1,4224) = 4224
+
+View created.
+
+SQL>
+SQL> -- object-linked view for accessing dependency$
+SQL> create or replace view sys.cdb$rootdeps&pdbid sharing=object as select du.name as owner, do.name as name, do.type# as d_type#, do.namespace as d_namespace,pu.name as referenced_owner, po.name as referenced_name, po.type# as p_type#, po.namespace as p_namespace,d.order#,d.property,d.d_attrs,d.d_reason from sys.obj$ do, sys.obj$ po, sys.user$ du, sys.user$ pu, sys.dependency$ d where du.user#=do.owner# and pu.user#=po.owner# and do.obj#=d_obj# and po.obj#=p_obj#;
+old   1: create or replace view sys.cdb$rootdeps&pdbid sharing=object as select du.name as owner, do.name as name, do.type# as d_type#, do.namespace as d_namespace,pu.name as referenced_owner, po.name as referenced_name, po.type# as p_type#, po.namespace as p_namespace,d.order#,d.property,d.d_attrs,d.d_reason from sys.obj$ do, sys.obj$ po, sys.user$ du, sys.user$ pu, sys.dependency$ d where du.user#=do.owner# and pu.user#=po.owner# and do.obj#=d_obj# and po.obj#=p_obj#
+new   1: create or replace view sys.cdb$rootdeps5 sharing=object as select du.name as owner, do.name as name, do.type# as d_type#, do.namespace as d_namespace,pu.name as referenced_owner, po.name as referenced_name, po.type# as p_type#, po.namespace as p_namespace,d.order#,d.property,d.d_attrs,d.d_reason from sys.obj$ do, sys.obj$ po, sys.user$ du, sys.user$ pu, sys.dependency$ d where du.user#=do.owner# and pu.user#=po.owner# and do.obj#=d_obj# and po.obj#=p_obj#
+
+View created.
+
+SQL>
+SQL> -- TODO: update to include fed flags
+SQL> -- object-linked view for accessing sysauth$: common system privileges
+SQL> create or replace view sys.cdb$commonsysprivs&pdbid sharing=object as
+  2  select u.name, s.privilege# from sys.user$ u, sys.sysauth$ s
+  3  where s.grantee#=u.user# and bitand(s.option$,8)=8 and s.privilege#<0;
+old   1: create or replace view sys.cdb$commonsysprivs&pdbid sharing=object as
+new   1: create or replace view sys.cdb$commonsysprivs5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- TODO: update to include fed flags
+SQL> -- object-linked view for accessing sysauth$: common role grants
+SQL> create or replace view sys.cdb$commonrolegrants&pdbid sharing=object as
+  2  select u.name, r.name rolename from sys.user$ u, sys.sysauth$ s, sys.user$ r
+  3  where s.grantee#=u.user# and bitand(s.option$,8)=8 and s.privilege#>0 and
+  4  s.privilege#=r.user#;
+old   1: create or replace view sys.cdb$commonrolegrants&pdbid sharing=object as
+new   1: create or replace view sys.cdb$commonrolegrants5 sharing=object as
+
+View created.
+
+SQL>
+SQL> -- TODO: update to include fed flags
+SQL> -- object-linked view for accessing objauth$
+SQL> create or replace view sys.cdb$commonobjprivs&pdbid sharing=object as
+  2  select u.name, oa.privilege#, u2.name owner, o.name objname, oa.col#
+  3  from sys.user$ u, sys.objauth$ oa, sys.obj$ o, sys.user$ u2
+  4  where oa.grantee#=u.user# and bitand(oa.option$,8)=8
+  5  and oa.obj#=o.obj# and o.owner#=u2.user#;
+old   1: create or replace view sys.cdb$commonobjprivs&pdbid sharing=object as
+new   1: create or replace view sys.cdb$commonobjprivs5 sharing=object as
+
+View created.
+
+SQL>
+SQL> create or replace view sys.cdb$objects&pdbid sharing=none as
+  2  select u.name owner, o.name object_name, o.signature object_sig,
+  3         o.namespace nsp, o.subname object_subname, o.obj# object_id,
+  4         o.type# object_type, o.flags flags
+  5    from sys.obj$ o, sys.user$ u
+  6    where o.owner#=u.user#;
+old   1: create or replace view sys.cdb$objects&pdbid sharing=none as
+new   1: create or replace view sys.cdb$objects5 sharing=none as
+
+View created.
+
+SQL>
+SQL> create or replace view sys.cdb$types&pdbid sharing=none as
+  2  select u.name owner, o.name object_name, o.signature object_sig,
+  3         o.namespace nsp, o.subname object_subname, o.obj# object_id,
+  4         o.type# object_type, o.flags flags, t.hashcode hashcode
+  5    from sys.obj$ o, sys.user$ u, sys.type$ t
+  6    where o.owner#=u.user# and o.type#=13 and o.oid$=t.tvoid;
+old   1: create or replace view sys.cdb$types&pdbid sharing=none as
+new   1: create or replace view sys.cdb$types5 sharing=none as
+
+View created.
+
+SQL>
+SQL>
+SQL> create or replace view sys.cdb$tables&pdbid sharing=none as
+  2  select * from sys.cdb$objects&pdbid where object_type=2;
+old   1: create or replace view sys.cdb$tables&pdbid sharing=none as
+new   1: create or replace view sys.cdb$tables5 sharing=none as
+old   2: select * from sys.cdb$objects&pdbid where object_type=2
+new   2: select * from sys.cdb$objects5 where object_type=2
+
+View created.
+
+SQL>
+SQL> alter session set &scriptparam=false;
+old   1: alter session set &scriptparam=false
+new   1: alter session set "_APPLICATION_SCRIPT"=false
+
+Session altered.
+
+SQL>
+SQL> @@?/rdbms/admin/loc_to_common4.sql 6
+SQL> Rem
+SQL> Rem $Header: rdbms/admin/loc_to_common4.sql /main/10 2017/04/25 08:09:06 thbaby Exp $
+SQL> Rem
+SQL> Rem loc_to_common4.sql
+SQL> Rem
+SQL> Rem Copyright (c) 2014, 2017, Oracle and/or its affiliates.
+SQL> Rem All rights reserved.
+SQL> Rem
+SQL> Rem    NAME
+SQL> Rem      loc_to_common4.sql - helper script for converting local to common
+SQL> Rem
+SQL> Rem    DESCRIPTION
+SQL> Rem      Does the fourth set of operations needed to convert local to common.
+SQL> Rem      Cleans up views created in loc_to_common1.sql
+SQL> Rem
+SQL> Rem    NOTES
+SQL> Rem      Called by noncdb_to_pdb.sql, apex_to_common.sql, pdb_to_apppdb.sql
+SQL> Rem
+SQL> Rem
+SQL> Rem    BEGIN SQL_FILE_METADATA
+SQL> Rem    SQL_SOURCE_FILE: rdbms/admin/loc_to_common4.sql
+SQL> Rem    SQL_SHIPPED_FILE: rdbms/admin/loc_to_common4.sql
+SQL> Rem    SQL_PHASE: LOC_TO_COMMON4
+SQL> Rem    SQL_STARTUP_MODE: NORMAL
+SQL> Rem    SQL_IGNORABLE_ERRORS: NONE
+SQL> Rem    SQL_CALLING_FILE: rdbms/admin/noncdb_to_pdb.sql
+SQL> Rem    END SQL_FILE_METADATA
+SQL> Rem
+SQL> Rem    MODIFIED   (MM/DD/YY)
+SQL> Rem    thbaby      04/22/17 - Bug 25940936: set _enable_view_pdb
+SQL> Rem    pyam        01/05/17 - set/clear scriptparam separately per container
+SQL> Rem    pyam        09/08/16 - RTI 19633354: remove duplicate set &scriptparam
+SQL> Rem    sankejai    01/22/16 - 16076261: session parameters scoped to container
+SQL> Rem    pyam        12/22/15 - 21927236: rename pdb_to_fedpdb to pdb_to_apppdb
+SQL> Rem    thbaby      09/02/15 - Bug 21774247: handle COMMON_DATA
+SQL> Rem    pyam        07/01/15 - set _APPLICATION_SCRIPT if applicable
+SQL> Rem    vperiwal    03/26/15 - 20172151: add immediate instances = all for close
+SQL> Rem    surman      01/08/15 - 19475031: Update SQL metadata
+SQL> Rem    pyam        09/16/14 - Helper script #2 for converting local objects to
+SQL> Rem                           common in a CDB environment.
+SQL> Rem    pyam        09/16/14 - Created
+SQL> Rem
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL>
+SQL> COLUMN scriptparam NEW_VALUE scriptparam
+SQL> select decode(&&1, 6, '"_APPLICATION_SCRIPT"', '"_ORACLE_SCRIPT"') scriptparam
+  2    from dual;
+old   1: select decode(&&1, 6, '"_APPLICATION_SCRIPT"', '"_ORACLE_SCRIPT"') scriptparam
+new   1: select decode(6, 6, '"_APPLICATION_SCRIPT"', '"_ORACLE_SCRIPT"') scriptparam
+
+SCRIPTPARAM
+---------------------
+"_APPLICATION_SCRIPT"
+
+1 row selected.
+
+SQL> alter session set &scriptparam=true;
+old   1: alter session set &scriptparam=true
+new   1: alter session set "_APPLICATION_SCRIPT"=true
+
+Session altered.
+
+SQL>
+SQL> drop view sys.cdb$tables&pdbid;
+old   1: drop view sys.cdb$tables&pdbid
+new   1: drop view sys.cdb$tables5
+
+View dropped.
+
+SQL> drop view sys.cdb$objects&pdbid;
+old   1: drop view sys.cdb$objects&pdbid
+new   1: drop view sys.cdb$objects5
+
+View dropped.
+
+SQL> drop view sys.cdb$types&pdbid;
+old   1: drop view sys.cdb$types&pdbid
+new   1: drop view sys.cdb$types5
+
+View dropped.
+
+SQL> drop view sys.cdb$common_root_objects&pdbid;
+old   1: drop view sys.cdb$common_root_objects&pdbid
+new   1: drop view sys.cdb$common_root_objects5
+
+View dropped.
+
+SQL> drop view sys.cdb$cdata_root_tables&pdbid;
+old   1: drop view sys.cdb$cdata_root_tables&pdbid
+new   1: drop view sys.cdb$cdata_root_tables5
+
+View dropped.
+
+SQL> drop view sys.cdb$cdata_root_views&pdbid;
+old   1: drop view sys.cdb$cdata_root_views&pdbid
+new   1: drop view sys.cdb$cdata_root_views5
+
+View dropped.
+
+SQL> drop view sys.cdb$cmn_root_types&pdbid;
+old   1: drop view sys.cdb$cmn_root_types&pdbid
+new   1: drop view sys.cdb$cmn_root_types5
+
+View dropped.
+
+SQL> drop view sys.cdb$common_users&pdbid;
+old   1: drop view sys.cdb$common_users&pdbid
+new   1: drop view sys.cdb$common_users5
+
+View dropped.
+
+SQL> drop view sys.cdb$rootdeps&pdbid;
+old   1: drop view sys.cdb$rootdeps&pdbid
+new   1: drop view sys.cdb$rootdeps5
+
+View dropped.
+
+SQL> drop view sys.cdb$commonsysprivs&pdbid;
+old   1: drop view sys.cdb$commonsysprivs&pdbid
+new   1: drop view sys.cdb$commonsysprivs5
+
+View dropped.
+
+SQL> drop view sys.cdb$commonrolegrants&pdbid;
+old   1: drop view sys.cdb$commonrolegrants&pdbid
+new   1: drop view sys.cdb$commonrolegrants5
+
+View dropped.
+
+SQL> drop view sys.cdb$commonobjprivs&pdbid;
+old   1: drop view sys.cdb$commonobjprivs&pdbid
+new   1: drop view sys.cdb$commonobjprivs5
+
+View dropped.
+
+SQL>
+SQL> alter session set &scriptparam=false;
+old   1: alter session set &scriptparam=false
+new   1: alter session set "_APPLICATION_SCRIPT"=false
+
+Session altered.
+
+SQL>
+SQL> alter session set container=&rootcon;
+old   1: alter session set container=&rootcon
+new   1: alter session set container=APP_CON
+
+Session altered.
+
+SQL>
+SQL> alter session set &scriptparam=true;
+old   1: alter session set &scriptparam=true
+new   1: alter session set "_APPLICATION_SCRIPT"=true
+
+Session altered.
+
+SQL> drop view sys.cdb$common_root_objects&pdbid;
+old   1: drop view sys.cdb$common_root_objects&pdbid
+new   1: drop view sys.cdb$common_root_objects5
+
+View dropped.
+
+SQL> drop view sys.cdb$cdata_root_tables&pdbid;
+old   1: drop view sys.cdb$cdata_root_tables&pdbid
+new   1: drop view sys.cdb$cdata_root_tables5
+
+View dropped.
+
+SQL> drop view sys.cdb$cdata_root_views&pdbid;
+old   1: drop view sys.cdb$cdata_root_views&pdbid
+new   1: drop view sys.cdb$cdata_root_views5
+
+View dropped.
+
+SQL> drop view sys.cdb$cmn_root_types&pdbid;
+old   1: drop view sys.cdb$cmn_root_types&pdbid
+new   1: drop view sys.cdb$cmn_root_types5
+
+View dropped.
+
+SQL> drop view sys.cdb$common_users&pdbid;
+old   1: drop view sys.cdb$common_users&pdbid
+new   1: drop view sys.cdb$common_users5
+
+View dropped.
+
+SQL> drop view sys.cdb$rootdeps&pdbid;
+old   1: drop view sys.cdb$rootdeps&pdbid
+new   1: drop view sys.cdb$rootdeps5
+
+View dropped.
+
+SQL> drop view sys.cdb$commonsysprivs&pdbid;
+old   1: drop view sys.cdb$commonsysprivs&pdbid
+new   1: drop view sys.cdb$commonsysprivs5
+
+View dropped.
+
+SQL> drop view sys.cdb$commonrolegrants&pdbid;
+old   1: drop view sys.cdb$commonrolegrants&pdbid
+new   1: drop view sys.cdb$commonrolegrants5
+
+View dropped.
+
+SQL> drop view sys.cdb$commonobjprivs&pdbid;
+old   1: drop view sys.cdb$commonobjprivs&pdbid
+new   1: drop view sys.cdb$commonobjprivs5
+
+View dropped.
+
+SQL> alter session set &scriptparam=false;
+old   1: alter session set &scriptparam=false
+new   1: alter session set "_APPLICATION_SCRIPT"=false
+
+Session altered.
+
+SQL>
+SQL> alter session set container="&pdbname";
+old   1: alter session set container="&pdbname"
+new   1: alter session set container="APP1"
+
+Session altered.
+
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL>
+SQL> -- reset the parameters at the end of the script
+SQL> exec dbms_pdb.noncdb_to_pdb(&&1);
+
+PL/SQL procedure successfully completed.
+
+SQL>
+SQL> alter session set &scriptparam=true;
+old   1: alter session set &scriptparam=true
+new   1: alter session set "_APPLICATION_SCRIPT"=true
+
+Session altered.
+
+SQL>
+SQL> Rem &&1 is 6 if fed
+SQL>
+SQL> COLUMN fedobjflag NEW_VALUE fedobjflag
+SQL> select decode(&&1, 6, '134217728', '0') fedobjflag from dual;
+old   1: select decode(&&1, 6, '134217728', '0') fedobjflag from dual
+new   1: select decode(6, 6, '134217728', '0') fedobjflag from dual
+
+FEDOBJFLA
+---------
+134217728
+
+1 row selected.
+
+SQL>
+SQL> -- run ALTER TABLE UPGRADE on table dependents of common types
+SQL> -- note this is done after noncdb_to_pdb(2), because between (1) and (2),
+SQL> -- the driver was changed to only compute signatures
+SQL> DECLARE
+  2    cursor c is
+  3      select u.name owner, o.name object_name
+  4        from sys.obj$ o, sys.user$ u
+  5      where o.type#=2 and u.user#=o.owner# and obj# in
+  6        (select d_obj# from sys.dependency$ d, sys.obj$ typo where
+  7         typo.type#=13 and typo.obj#=d.p_obj# and d.p_timestamp <> typo.stime and
+  8         bitand(typo.flags, 196608)<>0 and
+  9         bitand(typo.flags, 134217728)=&fedobjflag);
+ 10  BEGIN
+ 11    FOR tab in c
+ 12    LOOP
+ 13      BEGIN
+ 14        execute immediate 'ALTER TABLE ' ||
+ 15                          dbms_assert.enquote_name(tab.owner, FALSE) || '.' ||
+ 16                          dbms_assert.enquote_name(tab.object_name, FALSE) ||
+ 17                          ' UPGRADE';
+ 18      EXCEPTION
+ 19        WHEN OTHERS THEN
+ 20        BEGIN
+ 21          IF (sqlcode = -600 or sqlcode = -602 or sqlcode = -603) THEN
+ 22            raise;
+ 23          END IF;
+ 24        END;
+ 25      END;
+ 26    END LOOP;
+ 27    commit;
+ 28  END;
+ 29  /
+old   9:        bitand(typo.flags, 134217728)=&fedobjflag);
+new   9:        bitand(typo.flags, 134217728)=134217728);
+
+PL/SQL procedure successfully completed.
+
+SQL>
+SQL> alter session set &scriptparam=false;
+old   1: alter session set &scriptparam=false
+new   1: alter session set "_APPLICATION_SCRIPT"=false
+
+Session altered.
+
+SQL>
+SQL> alter pluggable database "&pdbname" close immediate instances=all;
+old   1: alter pluggable database "&pdbname" close immediate instances=all
+new   1: alter pluggable database "APP1" close immediate instances=all
+
+Pluggable database altered.
+
+SQL> alter session set container = CDB$ROOT;
+
+Session altered.
+
+SQL> alter system flush shared_pool;
+
+System altered.
+
+SQL> /
+
+System altered.
+
+SQL> /
+
+System altered.
+
+SQL> alter session set container = "&pdbname";
+old   1: alter session set container = "&pdbname"
+new   1: alter session set container = "APP1"
+
+Session altered.
+
+SQL>
+SQL> alter session set "_enable_view_pdb"=false;
+
+Session altered.
+
+SQL>
+SQL> -- leave the PDB in the same state it was when we started
+SQL> BEGIN
+  2    execute immediate '&open_sql &restricted_state';
+  3  EXCEPTION
+  4    WHEN OTHERS THEN
+  5    BEGIN
+  6      IF (sqlcode <> -900) THEN
+  7        RAISE;
+  8      END IF;
+  9    END;
+ 10  END;
+ 11  /
+old   2:   execute immediate '&open_sql &restricted_state';
+new   2:   execute immediate 'ALTER PLUGGABLE DATABASE APP1 OPEN UPGRADE RESTRICTED';
+
+PL/SQL procedure successfully completed.
+
+SQL>
+SQL> WHENEVER SQLERROR CONTINUE;
+SQL>
+SQL>
+SQL> alter pluggable database application WEB_APP sync;
+
+Pluggable database altered.
+
+SQL>
